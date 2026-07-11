@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carino Learn — Assembly, Bash, GNU Utils & Linux, hands-on</title>
+  <meta name="description" content="Practical, beginner-friendly roadmaps for the low-level Linux stack: x86-64 assembly, Bash scripting, the GNU command-line tools, and administering the Red Hat family (Fedora, CentOS, RHEL).">
+  <link rel="icon" href="logo.webp" type="image/webp">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;700&family=Red+Hat+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+</head>
+<body class="state-overview">
+
+  <!-- ============================ Carino navbar ============================ -->
+  <header class="top-header">
+    <div class="header-left">
+      <a class="brand-name" id="brandHome" href="#" title="Back to course chooser">
+        Carino<span class="app-tag">Learn</span>
+      </a>
+      <div class="header-clock" aria-hidden="true">
+        <span class="clock-time" id="clockLocal">00:00:00</span>
+        <span class="clock-tz" id="tzName">local</span>
+        <span class="brand-greeting" id="greeting">Choose a course.</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="prog-mini" title="Course progress">
+        <div class="prog-ring" id="progRing"><span id="progPct">0%</span></div>
+      </div>
+      <div class="social-row">
+        <a href="https://github.com/MiguelCarino" target="_blank" rel="noopener" class="icon-btn" title="GitHub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        </a>
+        <a href="https://www.linkedin.com/in/miguelcarino94/" target="_blank" rel="noopener" class="icon-btn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+      </div>
+      <button class="status-toggle" id="diagToggle" title="Progress" aria-haspopup="true" aria-expanded="false" aria-controls="diagBox">
+        <span>Status</span><div class="pulse-dot"></div>
+      </button>
+    </div>
+
+    <div class="diag-dropdown" id="diagBox">
+      <div class="diag-section">Current course</div>
+      <div class="diag-row"><span class="diag-lbl">Stages cleared</span><span class="diag-val" id="diagDone">0 / 0</span></div>
+      <div class="diag-row"><span class="diag-lbl">Completion</span><span class="diag-val" id="diagPct">0%</span></div>
+      <div class="diag-section">Platform</div>
+      <div class="diag-row"><span class="diag-lbl">Courses</span><span class="diag-val">Asm · Bash · GNU · Linux</span></div>
+      <div class="diag-row"><span class="diag-lbl">Progress</span><span class="diag-val">saved locally</span></div>
+      <div class="diag-section">Session</div>
+      <div class="diag-row"><span class="diag-lbl">Local time</span><span class="diag-val" id="diagClock">--:--:--</span></div>
+    </div>
+  </header>
+
+  <!-- ============================ Course chooser (slice menu) ============================ -->
+  <div class="overview-head">
+    <span class="kicker">Carino workshop · the low-level Linux stack</span>
+    <h1 class="overview-title">Learn the machine, from the <em>silicon up</em>.</h1>
+    <p class="overview-sub">Four hands-on, beginner-friendly roadmaps. Pick where to start — every stage explains <i>why</i> it matters and gives you something to actually run.</p>
+  </div>
+  <nav class="slice-menu" id="sliceMenu" aria-label="Course chooser"></nav>
+
+  <!-- ============================ Selected course renders here ============================ -->
+  <main id="courseHost" class="course-host"></main>
+
+  <!-- courses register themselves into window.COURSES -->
+  <script src="carino-clock.js" defer></script>
+  <script src="js/courses/assembly.js"></script>
+  <script src="js/courses/bash.js"></script>
+  <script src="js/courses/gnu.js"></script>
+  <script src="js/courses/linux.js"></script>
+  <script src="js/courses/networking.js"></script>
+  <script src="js/courses/browser.js"></script>
+  <script src="js/courses/regex.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
