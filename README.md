@@ -54,4 +54,4 @@ Adding a course is just another file in `js/courses/` that pushes onto `window.C
 
 ## License
 
-MIT — part of the [carino.systems](https://carino.systems/) workshop.
+AGPL-3.0 — part of the [carino.systems](https://carino.systems/) workshop.
