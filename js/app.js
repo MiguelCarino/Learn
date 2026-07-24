@@ -29,6 +29,11 @@
     browser: '<rect x="2" y="3" width="20" height="18" rx="2"></rect><line x1="2" y1="8" x2="22" y2="8"></line><line x1="6" y1="5.5" x2="6.01" y2="5.5"></line><line x1="9" y1="5.5" x2="9.01" y2="5.5"></line>',
     regex: '<path d="M4 20v-4"></path><path d="M4 12V4"></path><path d="M4 12h4"></path><path d="M15 5l6 3.5-6 3.5V5z"></path><path d="M12 8.5H8"></path><circle cx="6" cy="19" r="1.4"></circle><path d="M17 15l4 4M21 15l-4 4"></path>',
     shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline>',
+    pulse: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>',
+    ram: '<rect x="2" y="7" width="20" height="10" rx="1.5"></rect><line x1="6" y1="10" x2="6" y2="14"></line><line x1="10" y1="10" x2="10" y2="14"></line><line x1="14" y1="10" x2="14" y2="14"></line><line x1="18" y1="10" x2="18" y2="14"></line><line x1="5" y1="17" x2="5" y2="20"></line><line x1="12" y1="17" x2="12" y2="20"></line><line x1="19" y1="17" x2="19" y2="20"></line>',
+    branch: '<line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path>',
+    atom: '<circle cx="12" cy="12" r="1.6"></circle><ellipse cx="12" cy="12" rx="10" ry="4.2"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"></ellipse>',
   };
   const svg = (name) =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.cpu}</svg>`;
@@ -116,6 +121,19 @@
     return esc(t);
   }
 
+  const PY_KW = new Set((
+    "def return import from for while if elif else print class with as in not " +
+    "and or lambda try except finally raise pass break continue yield global " +
+    "None True False assert del is async await"
+  ).split(" "));
+  const PY_RE = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\b\d[\w.]*\b|[A-Za-z_]\w*/g;
+  function pyClassify(t) {
+    if (/^["']/.test(t)) return `<span class="t-str">${esc(t)}</span>`;
+    if (/^\d/.test(t)) return `<span class="t-num">${esc(t)}</span>`;
+    if (PY_KW.has(t)) return `<span class="t-ins">${esc(t)}</span>`;
+    return esc(t);
+  }
+
   const SH_RE = /"(?:[^"\\]|\\.)*"|'[^']*'|\$\{[^}]*\}|\$\(|\$[A-Za-z_]\w*|\$[?@#*!0-9-]|\b\d+\b|[A-Za-z_][\w-]*/g;
   function shClassify(t) {
     if (/^["']/.test(t)) return `<span class="t-str">${esc(t)}</span>`;
@@ -125,12 +143,49 @@
     return esc(t);
   }
 
+  /* HL7 v2 (ER7): colour the segment name and the encoding characters */
+  function hl7Line(line) {
+    if (!/^[A-Z][A-Z0-9]{2}[|]/.test(line)) return esc(line);
+    const seg = line.slice(0, 3);
+    const rest = line.slice(3).split(/([|^~&\\])/).map((t) =>
+      /^[|^~&\\]$/.test(t) ? `<span class="t-dir">${esc(t)}</span>` : esc(t)).join("");
+    return `<span class="t-ins">${esc(seg)}</span>${rest}`;
+  }
+
+  /* DICOM (dcmdump style): (gggg,eeee) VR [value] # comment */
+  function dcmLine(line) {
+    const m = /^(\s*)\(([0-9a-fA-F]{4}),([0-9a-fA-F]{4})\)(\s+)([A-Z]{2})(\s+)(.*)$/.exec(line);
+    if (!m) {
+      const ci = line.indexOf("#");
+      return ci >= 0
+        ? esc(line.slice(0, ci)) + `<span class="t-com">${esc(line.slice(ci))}</span>`
+        : esc(line);
+    }
+    let rest = m[7], comment = "";
+    const ci = rest.indexOf("#");
+    if (ci >= 0) { comment = rest.slice(ci); rest = rest.slice(0, ci); }
+    const val = rest.replace(/\[([^\]]*)\]/g, (_, v) => `[<span class="t-str">${esc(v)}</span>]`);
+    return `${m[1]}<span class="t-reg">(${m[2]},${m[3]})</span>${m[4]}` +
+      `<span class="t-ins">${m[5]}</span>${m[6]}${val}` +
+      (comment ? `<span class="t-com">${esc(comment)}</span>` : "");
+  }
+
   function highlight(src, lang) {
     const lines = src.split("\n");
     if (lang === "asm")
       return lines.map((l) => hlLine(l, ";", ASM_RE, asmClassify)).join("\n");
+    if (lang === "hl7")   return lines.map(hl7Line).join("\n");
+    if (lang === "dicom") return lines.map(dcmLine).join("\n");
+    if (lang === "py")
+      return lines.map((l) => hlLine(l, "#", PY_RE, pyClassify)).join("\n");
+    if (lang === "json" || lang === "txt") return esc(src);
     return lines.map((l) => hlLine(l, "#", SH_RE, shClassify)).join("\n");
   }
+
+  const LANG_LABEL = {
+    asm: "x86-64 · nasm", hl7: "HL7 v2 · ER7", dicom: "DICOM · dcmdump",
+    json: "JSON", txt: "plain text", py: "Python",
+  };
 
   /* =================================================================== */
   /* Course rendering                                                    */
@@ -155,7 +210,7 @@
       .map((w) => `<li>${md(w)}</li>`).join("");
     const drills = (s.drills || [])
       .map((d) => `<li>${md(d)}</li>`).join("");
-    const langLabel = s.lang === "asm" ? "x86-64 · nasm" : "shell";
+    const langLabel = LANG_LABEL[s.lang] || "shell";
 
     // documents attached to this stage (e.g. ISO 27001 templates)
     const tplDocs = (s.templates || [])
@@ -331,8 +386,9 @@
         </div>
       </div>`;
 
-    // roadmap with track headers
+    // roadmap with track headers + inline mini-labs placed at their topic
     const roadmap = $("#roadmap", host);
+    const miniLabs = (window.COURSE_MINILABS || {})[course.id] || [];
     let curTrack = null;
     course.stages.forEach((s) => {
       const tr = trackOf(course, s.n);
@@ -344,6 +400,20 @@
         roadmap.appendChild(h);
       }
       roadmap.appendChild(stageCard(course, s));
+      miniLabs.filter((L) => L.at === s.n).forEach((L) => {
+        const sec = document.createElement("section");
+        sec.className = "lab lab-inline";
+        sec.innerHTML = `
+          <div class="lab-head">
+            <span class="track-kicker">Interactive lab</span>
+            <h2>${esc(L.title)}</h2>
+            <p class="lab-blurb">${md(L.blurb || "")}</p>
+          </div>
+          <div class="lab-mount"></div>`;
+        roadmap.appendChild(sec);
+        try { L.mount($(".lab-mount", sec)); }
+        catch (err) { console.warn("mini-lab mount failed for " + course.id, err); }
+      });
     });
 
     // jump nav
@@ -508,6 +578,9 @@
     document.body.classList.remove("state-overview");
     document.body.classList.add("state-selected");
     $$(".slice").forEach((s) => s.classList.toggle("active", s.dataset.id === id));
+    // keep the active tab visible in the (scrollable) collapsed tab bar
+    const menu = $("#sliceMenu"), act = $(`.slice[data-id="${id}"]`, menu);
+    if (menu && act) menu.scrollLeft = act.offsetLeft - (menu.clientWidth - act.offsetWidth) / 2;
     renderCourse(window.COURSES[id]);
     // scroll to anchor if any, else top of course
     requestAnimationFrame(() => {

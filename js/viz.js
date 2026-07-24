@@ -8,8 +8,9 @@
 (() => {
   "use strict";
 
-  const VIZ = {};
-  window.COURSE_VIZ = VIZ;
+  // merge-safe: course files may self-register their headline lab before or
+  // after this file loads (window.COURSE_VIZ[courseId] = {...})
+  const VIZ = window.COURSE_VIZ = window.COURSE_VIZ || {};
 
   const esc = (s) =>
     String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -742,6 +743,115 @@
         }
       });
       paintPhase(); paintFams();
+    },
+  };
+
+  /* =================================================================
+     DICOM & HL7 — message dissector: click any field of a real HL7 v2
+     message and see it decoded, segment by segment, caret by caret
+     ================================================================= */
+  VIZ.dicom = {
+    title: "The HL7 dissector",
+    blurb:
+      "Real HL7 v2 messages, clickable. Pick a message type, then click **any field** " +
+      "to see its name and its components decoded — the pipes stop being line noise " +
+      "about three clicks from now.",
+    mount(host) {
+      const F = {
+        MSH: { 2: "encoding characters", 3: "sending application", 4: "sending facility", 5: "receiving application", 6: "receiving facility", 7: "message date/time", 9: "message type ^ trigger event", 10: "message control ID", 11: "processing ID (P=production)", 12: "HL7 version" },
+        EVN: { 1: "event type code", 2: "recorded date/time" },
+        PID: { 1: "set ID", 3: "patient identifier list (the MRN)", 5: "patient name (LAST^FIRST^MIDDLE)", 7: "date of birth (YYYYMMDD)", 8: "administrative sex", 11: "patient address" },
+        PV1: { 1: "set ID", 2: "patient class (I inpatient · O outpatient · E emergency)", 3: "assigned location (ward^room^bed)", 7: "attending doctor", 10: "hospital service", 19: "visit number" },
+        MRG: { 1: "prior patient ID — the MRN being retired" },
+        ORC: { 1: "order control (NW new · CA cancel · RE results)", 2: "placer order number", 3: "filler order number" },
+        OBR: { 1: "set ID", 2: "placer order number", 3: "filler order number", 4: "universal service ID (what was ordered)", 7: "observation date/time", 16: "ordering provider", 18: "accession number → DICOM (0008,0050)", 25: "result status (P prelim · F final · C corrected)" },
+        OBX: { 1: "set ID", 2: "value type (TX text · NM numeric · CE coded · ED document)", 3: "observation identifier", 5: "the observation value", 6: "units", 7: "reference range", 11: "observation result status" },
+        MSA: { 1: "acknowledgement code (AA accept · AE error · AR reject)", 2: "control ID of the message being answered" },
+      };
+      const COMP = {
+        "PID-5": ["family name", "given name", "middle name/initial"],
+        "PID-3": ["ID value", "check digit", "check digit scheme", "assigning authority", "identifier type (MR = medical record)"],
+        "PV1-3": ["ward / point of care", "room", "bed"],
+        "MSH-9": ["message type", "trigger event"],
+        "OBR-4": ["code", "human-readable text", "coding system"],
+        "OBX-3": ["code", "human-readable text", "coding system"],
+      };
+      const MSGS = [
+        { name: "ADT^A01 — admission", lines: [
+          "MSH|^~\\&|HIS|CARINO_GH|RIS|RADIOLOGY|20260724081500||ADT^A01|MSG00042|P|2.5.1",
+          "EVN|A01|20260724081500",
+          "PID|1||12345^^^CARINO_GH^MR||GARCIA^MARIA^L||19840312|F|||CALLE 5 #22^^GUADALAJARA^JAL^44100",
+          "PV1|1|I|3W^301^A|||^HOUSE^GREGORY^^^DR|||MED|||||||||V2026-08812",
+        ]},
+        { name: "ORU^R01 — result", lines: [
+          "MSH|^~\\&|RIS|RADIOLOGY|EMR|CARINO_GH|20260724115500||ORU^R01|MSG00088|P|2.5.1",
+          "PID|1||12345^^^CARINO_GH^MR||GARCIA^MARIA^L||19840312|F",
+          "ORC|RE|EMR-55710|RIS-70221",
+          "OBR|1|EMR-55710|RIS-70221|71250^CT CHEST WO CONTRAST^CPT|||20260724092000|||||||||^HOUSE^GREGORY||ACC-99031|||||||F",
+          "OBX|1|TX|IMP^IMPRESSION||No acute cardiopulmonary abnormality.||||||F",
+        ]},
+        { name: "ADT^A40 — merge", lines: [
+          "MSH|^~\\&|HIS|CARINO_GH|RIS|RADIOLOGY|20260724110000||ADT^A40|MSG00101|P|2.5.1",
+          "PID|1||12345^^^CARINO_GH^MR||GARCIA^MARIA^L||19840312|F",
+          "MRG|99887^^^CARINO_GH^MR",
+        ]},
+        { name: "ACK — acknowledgement", lines: [
+          "MSH|^~\\&|RIS|RADIOLOGY|HIS|CARINO_GH|20260724081501||ACK^A01|ACK00042|P|2.5.1",
+          "MSA|AA|MSG00042",
+        ]},
+      ];
+      let cur = 0, sel = { line: 0, field: 9 };
+
+      host.innerHTML = `
+        <div class="viz hl7viz">
+          <div class="viz-ctrls wrap" data-r="msgs"></div>
+          <div class="hl7-msg" data-r="msg"></div>
+          <div class="hl7-info" data-r="info"></div>
+        </div>`;
+      $('[data-r="msgs"]', host).innerHTML = MSGS.map((m, i) =>
+        `<button class="viz-btn mono ${i === 0 ? "primary" : ""}" data-m="${i}">${esc(m.name)}</button>`).join("");
+
+      function fieldsOf(line) {
+        // returns [{n, v}] where n is the HL7 field number
+        const parts = line.split("|");
+        const seg = parts[0];
+        const out = [];
+        parts.slice(1).forEach((v, idx) => {
+          out.push({ n: seg === "MSH" ? idx + 2 : idx + 1, v });
+        });
+        return { seg, fields: out };
+      }
+      function paint() {
+        const m = MSGS[cur];
+        $$("[data-m]", host).forEach((b) => b.classList.toggle("primary", +b.dataset.m === cur));
+        $('[data-r="msg"]', host).innerHTML = m.lines.map((line, li) => {
+          const { seg, fields } = fieldsOf(line);
+          return `<div class="hl7-line">
+            <span class="hl7-seg">${esc(seg)}</span>${fields.map((f) =>
+              `<span class="hl7-sep">|</span><button class="hl7-f ${li === sel.line && f.n === sel.field ? "sel" : ""} ${f.v === "" ? "empty" : ""}"
+                 data-l="${li}" data-f="${f.n}" title="${esc(seg)}-${f.n}">${esc(f.v) || "·"}</button>`).join("")}
+          </div>`;
+        }).join("");
+        const line = m.lines[sel.line] || m.lines[0];
+        const { seg, fields } = fieldsOf(line);
+        const f = fields.find((x) => x.n === sel.field) || fields[0];
+        const name = (F[seg] || {})[f.n] || "optional field (empty here is normal — HL7 is positional)";
+        const key = `${seg}-${f.n}`;
+        const comps = f.v.split("^");
+        const compNames = COMP[key];
+        $('[data-r="info"]', host).innerHTML = `
+          <div class="hl7-info-h"><code>${esc(seg)}-${f.n}</code> <b>${esc(name)}</b></div>
+          <div class="hl7-info-v">value: <code>${esc(f.v) || "(empty)"}</code></div>
+          ${comps.length > 1 ? `<div class="rx-tokens">${comps.map((c, ci) =>
+            `<div class="rx-tok"><code>${esc(seg)}-${f.n}.${ci + 1}</code><span>${compNames && compNames[ci] ? esc(compNames[ci]) + ": " : ""}${c ? "“" + esc(c) + "”" : "<i>(empty)</i>"}</span></div>`).join("")}</div>` : ""}`;
+      }
+      host.addEventListener("click", (e) => {
+        const mb = e.target.closest("[data-m]");
+        if (mb) { cur = +mb.dataset.m; sel = { line: 0, field: 9 }; paint(); return; }
+        const fb = e.target.closest("[data-f]");
+        if (fb) { sel = { line: +fb.dataset.l, field: +fb.dataset.f }; paint(); }
+      });
+      paint();
     },
   };
 })();
