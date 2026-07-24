@@ -624,6 +624,8 @@
             <div class="viz-ctrls wrap">
               <span class="gnu-slot-name">host</span>
               ${IPS.map((x) => `<button class="viz-btn mono" data-ip="${x}">${x}</button>`).join("")}
+              <input class="rx-input" data-r="ipin" spellcheck="false" placeholder="…or type any IP"
+                aria-label="Custom IP address" style="flex:0 1 160px;min-width:130px;font-size:.78rem;padding:6px 10px">
               <label class="sub-slider">/<b data-r="p"></b>
                 <input type="range" min="8" max="30" value="24" data-r="range" aria-label="Prefix length"></label>
             </div>
@@ -667,11 +669,16 @@
             : `✗ different subnet → traffic goes <b>via the gateway</b>`;
         }
         host.addEventListener("input", (e) => {
-          if (e.target.matches('[data-r="range"]')) { prefix = +e.target.value; paint(); }
+          if (e.target.matches('[data-r="range"]')) { prefix = +e.target.value; paint(); return; }
+          if (e.target.matches('[data-r="ipin"]')) {
+            const v = e.target.value.trim();
+            const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(v);
+            if (m && m.slice(1).every((o) => +o <= 255)) { ip = v; paint(); }
+          }
         });
         host.addEventListener("click", (e) => {
           const i = e.target.closest("[data-ip]");
-          if (i) { ip = i.dataset.ip; paint(); return; }
+          if (i) { ip = i.dataset.ip; $('[data-r="ipin"]', host).value = ""; paint(); return; }
           const o = e.target.closest("[data-o]");
           if (o) { other = o.dataset.o; paint(); }
         });
@@ -1227,6 +1234,7 @@
           <div class="viz dcmviz">
             <div class="viz-ctrls">
               <button class="viz-btn mono" data-a="anon">anonymize: <b data-r="sw">OFF</b></button>
+              <button class="viz-btn mono" data-a="cmd" hidden>copy the dcmodify command</button>
               <span class="viz-status" data-r="stat"></span>
             </div>
             <div class="dcm-rows" data-r="rows"></div>
@@ -1235,6 +1243,7 @@
         function paint() {
           $('[data-r="sw"]', host).textContent = anon ? "ON" : "OFF";
           $('[data-a="anon"]', host).classList.toggle("on", anon);
+          $('[data-a="cmd"]', host).hidden = !anon;
           const phiN = ROWS.filter((r) => r.phi).length;
           $('[data-r="stat"]', host).textContent = anon
             ? `${phiN} PHI-bearing tags handled · pixels still need eyeballing`
@@ -1249,8 +1258,24 @@
           $('[data-r="info"]', host).innerHTML =
             `<b>${r.t} ${esc(r.name)}</b> · VR ${r.vr} — ${fmt(r.d)}`;
         }
-        host.addEventListener("click", (e) => {
+        host.addEventListener("click", async (e) => {
           if (e.target.closest('[data-a="anon"]')) { anon = !anon; paint(); return; }
+          const cmdBtn = e.target.closest('[data-a="cmd"]');
+          if (cmdBtn) {
+            // generate the equivalent header-cleaning command from the table
+            const parts = ["dcmodify -nb"];
+            ROWS.forEach((r) => {
+              if (r.phi === "pseud") parts.push(`-m "${r.name}=${r.anon}"`);
+              if (r.phi === "hard") parts.push(`-e "${r.name}"`);
+            });
+            const cmd = parts.join(" \\\n  ") + " \\\n  study/*.dcm\n" +
+              "# UIDs: remap CONSISTENTLY with gdcmanon or pydicom (dcmodify keeps no UID map)\n" +
+              "# pixels: check for burned-in text before calling this de-identified";
+            try { await navigator.clipboard.writeText(cmd); cmdBtn.textContent = "copied ✓"; }
+            catch { cmdBtn.textContent = "clipboard blocked"; }
+            setTimeout(() => (cmdBtn.textContent = "copy the dcmodify command"), 1400);
+            return;
+          }
           const row = e.target.closest("[data-i]");
           if (row) { selIdx = +row.dataset.i; paint(); }
         });

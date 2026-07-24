@@ -801,15 +801,27 @@
         ]},
       ];
       let cur = 0, sel = { line: 0, field: 9 };
+      let custom = null;   // when set, the textarea's message replaces the preset
 
       host.innerHTML = `
         <div class="viz hl7viz">
           <div class="viz-ctrls wrap" data-r="msgs"></div>
+          <div data-r="pastewrap" hidden>
+            <textarea class="hl7-paste" rows="6" spellcheck="false"
+              aria-label="Paste an HL7 v2 message (one segment per line)"
+              placeholder="Paste any HL7 v2 message here — one segment per line…"></textarea>
+          </div>
           <div class="hl7-msg" data-r="msg"></div>
           <div class="hl7-info" data-r="info"></div>
         </div>`;
       $('[data-r="msgs"]', host).innerHTML = MSGS.map((m, i) =>
-        `<button class="viz-btn mono ${i === 0 ? "primary" : ""}" data-m="${i}">${esc(m.name)}</button>`).join("");
+        `<button class="viz-btn mono ${i === 0 ? "primary" : ""}" data-m="${i}">${esc(m.name)}</button>`).join("") +
+        `<button class="viz-btn mono" data-m="custom">✎ paste your own</button>`;
+
+      const activeLines = () =>
+        custom !== null
+          ? custom.split(/\r\n|\r|\n/).map((l) => l.trim()).filter(Boolean)
+          : MSGS[cur].lines;
 
       function fieldsOf(line) {
         // returns [{n, v}] where n is the HL7 field number
@@ -822,9 +834,17 @@
         return { seg, fields: out };
       }
       function paint() {
-        const m = MSGS[cur];
-        $$("[data-m]", host).forEach((b) => b.classList.toggle("primary", +b.dataset.m === cur));
-        $('[data-r="msg"]', host).innerHTML = m.lines.map((line, li) => {
+        const lines = activeLines();
+        $$("[data-m]", host).forEach((b) => b.classList.toggle("primary",
+          custom !== null ? b.dataset.m === "custom" : +b.dataset.m === cur));
+        $('[data-r="pastewrap"]', host).hidden = custom === null;
+        if (!lines.length) {
+          $('[data-r="msg"]', host).innerHTML = '<span class="ln-dim">— paste a message above: MSH first, one segment per line —</span>';
+          $('[data-r="info"]', host).innerHTML = '<span class="ln-dim">waiting for a message…</span>';
+          return;
+        }
+        if (sel.line >= lines.length) sel = { line: 0, field: 9 };
+        $('[data-r="msg"]', host).innerHTML = lines.map((line, li) => {
           const { seg, fields } = fieldsOf(line);
           return `<div class="hl7-line">
             <span class="hl7-seg">${esc(seg)}</span>${fields.map((f) =>
@@ -832,7 +852,7 @@
                  data-l="${li}" data-f="${f.n}" title="${esc(seg)}-${f.n}">${esc(f.v) || "·"}</button>`).join("")}
           </div>`;
         }).join("");
-        const line = m.lines[sel.line] || m.lines[0];
+        const line = lines[sel.line] || lines[0];
         const { seg, fields } = fieldsOf(line);
         const f = fields.find((x) => x.n === sel.field) || fields[0];
         const name = (F[seg] || {})[f.n] || "optional field (empty here is normal — HL7 is positional)";
@@ -847,9 +867,19 @@
       }
       host.addEventListener("click", (e) => {
         const mb = e.target.closest("[data-m]");
-        if (mb) { cur = +mb.dataset.m; sel = { line: 0, field: 9 }; paint(); return; }
+        if (mb) {
+          if (mb.dataset.m === "custom") {
+            // seed the textarea with the current preset so there's something to edit
+            const ta = $(".hl7-paste", host);
+            if (custom === null) { custom = ta.value || MSGS[cur].lines.join("\n"); ta.value = custom; }
+          } else { cur = +mb.dataset.m; custom = null; }
+          sel = { line: 0, field: 9 }; paint(); return;
+        }
         const fb = e.target.closest("[data-f]");
         if (fb) { sel = { line: +fb.dataset.l, field: +fb.dataset.f }; paint(); }
+      });
+      $(".hl7-paste", host).addEventListener("input", (e) => {
+        custom = e.target.value; paint();
       });
       paint();
     },

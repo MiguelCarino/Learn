@@ -341,6 +341,30 @@
     return wrap;
   }
 
+  /* widgets rewrite their explainer/status lines on every interaction —
+     mark them live so screen readers announce the change. Also give every
+     widget command line a copy button (it copies whatever the line shows
+     at click time, so it tracks the widget's state). */
+  function livenLab(root) {
+    $$('.asm-msg, .viz-status, [data-r="say"], .net-say, .br-say', root)
+      .forEach((el) => el.setAttribute("aria-live", "polite"));
+    $$(".gnu-cmdline", root).forEach((line) => {
+      if ($(".copy-btn", line)) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "copy-btn cmd-copy";
+      btn.textContent = "copy";
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const code = $("code", line);
+        try { await navigator.clipboard.writeText(code ? code.textContent : ""); btn.textContent = "copied ✓"; }
+        catch { btn.textContent = "select & copy"; }
+        setTimeout(() => (btn.textContent = "copy"), 1400);
+      });
+      line.appendChild(btn);
+    });
+  }
+
   function renderCourse(course) {
     const host = $("#courseHost");
     const viz = (window.COURSE_VIZ || {})[course.id];
@@ -411,7 +435,7 @@
           </div>
           <div class="lab-mount"></div>`;
         roadmap.appendChild(sec);
-        try { L.mount($(".lab-mount", sec)); }
+        try { L.mount($(".lab-mount", sec)); livenLab(sec); }
         catch (err) { console.warn("mini-lab mount failed for " + course.id, err); }
       });
     });
@@ -442,7 +466,7 @@
 
     // mount the interactive visual
     if (viz) {
-      try { viz.mount($("#labMount", host)); }
+      try { viz.mount($("#labMount", host)); livenLab($("#labMount", host)); }
       catch (err) { console.warn("viz mount failed for " + course.id, err); }
     }
 

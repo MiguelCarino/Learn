@@ -1346,7 +1346,11 @@ git log -p | grep -i "secret_key ="  # keys committed to repos, in logs,
           const num = Number(n);
           const names = [[15, "quadrillion"], [12, "trillion"], [9, "billion"], [6, "million"], [3, "thousand"]];
           for (const [z, nm] of names) {
-            if (num >= Math.pow(10, z)) return (num / Math.pow(10, z)).toPrecision(3).replace(/\.?0+$/, "") + " " + nm;
+            if (num >= Math.pow(10, z)) {
+              const v = (num / Math.pow(10, z)).toPrecision(3);
+              // strip trailing zeros only after a decimal point ("2.50"→"2.5", never "100"→"1")
+              return (v.includes(".") ? v.replace(/\.?0+$/, "") : v) + " " + nm;
+            }
           }
           return Math.round(num).toLocaleString();
         };

@@ -424,9 +424,9 @@ body.state-selected .slice-menu {
 body.state-selected .slice-menu::-webkit-scrollbar { display: none; }
 body.state-selected .slice { flex: 0 0 auto; }
 body.state-selected .slice-title { white-space: nowrap; }
-body.state-selected .slice-num,
-body.state-selected .slice-blurb,
-body.state-selected .slice-prog { display: none; }
+body.state-selected .slice-menu .slice-num,
+body.state-selected .slice-menu .slice-blurb,
+body.state-selected .slice-menu .slice-prog { display: none; }
 body.state-selected .slice-inner { flex-direction: row; gap: 10px; padding: 0 16px; }
 body.state-selected .slice-icon svg { width: 17px; height: 17px; }
 body.state-selected .slice-title { font-size: .92rem; font-weight: 700; }
@@ -600,7 +600,9 @@ body.state-selected .slice { min-width: 110px; }
 }
 .gnu-slot select:hover { border-color: var(--accent); }
 .gnu-pipe { font-family: var(--mono); color: var(--accent); font-weight: 700; font-size: 1.1rem; align-self: end; padding-bottom: 6px; }
-.gnu-cmdline { font-family: var(--mono); font-size: .8rem; background: var(--bg-code); border: 1px solid var(--border-soft); border-radius: 8px; padding: 9px 14px; margin-bottom: 14px; overflow-x: auto; white-space: nowrap; }
+.gnu-cmdline { font-family: var(--mono); font-size: .8rem; background: var(--bg-code); border: 1px solid var(--border-soft); border-radius: 8px; padding: 9px 14px; margin-bottom: 14px; overflow-x: auto; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.gnu-cmdline code { flex: 1; min-width: 0; overflow-x: auto; }
+.cmd-copy { flex: 0 0 auto; margin-left: auto; }
 .gnu-cmdline .prompt { color: var(--accent); font-weight: 700; }
 .gnu-cmdline code { color: #d4d4d4; }
 .gnu-flow { display: flex; gap: 6px; align-items: stretch; overflow-x: auto; padding-bottom: 6px; }
@@ -908,6 +910,8 @@ body.state-selected .slice { min-width: 110px; }
 .aud-f { font-size: .9rem; color: var(--text-sec); margin-bottom: 10px; }
 
 /* dicom: HL7 dissector */
+.hl7-paste { width: 100%; font-family: var(--mono); font-size: .78rem; line-height: 1.7; background: var(--bg-code); color: var(--text-sec); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; resize: vertical; outline: none; }
+.hl7-paste:focus { border-color: var(--accent); }
 .hl7-msg { background: var(--bg-code); border: 1px solid var(--border-soft); border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin-bottom: 14px; }
 .hl7-line { white-space: nowrap; font-family: var(--mono); font-size: .78rem; line-height: 2.1; }
 .hl7-seg { color: var(--t-ins); font-weight: 700; letter-spacing: .04em; }
