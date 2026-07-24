@@ -28,14 +28,23 @@
     globe: '<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>',
     browser: '<rect x="2" y="3" width="20" height="18" rx="2"></rect><line x1="2" y1="8" x2="22" y2="8"></line><line x1="6" y1="5.5" x2="6.01" y2="5.5"></line><line x1="9" y1="5.5" x2="9.01" y2="5.5"></line>',
     regex: '<path d="M4 20v-4"></path><path d="M4 12V4"></path><path d="M4 12h4"></path><path d="M15 5l6 3.5-6 3.5V5z"></path><path d="M12 8.5H8"></path><circle cx="6" cy="19" r="1.4"></circle><path d="M17 15l4 4M21 15l-4 4"></path>',
+    shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline>',
   };
   const svg = (name) =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.cpu}</svg>`;
 
   /* ---------- progress (per course) ---------- */
-  const keyFor = (id) => `carino-learn-${id}`;
+  /* keys use the fleet 'learn.' prefix; legacy 'carino-learn-*' keys migrate */
+  const keyFor = (id) => `learn.${id}`;
   const doneFor = (id) => {
-    try { return new Set(JSON.parse(localStorage.getItem(keyFor(id))) || []); }
+    try {
+      let raw = localStorage.getItem(keyFor(id));
+      if (raw == null) {
+        const legacy = localStorage.getItem(`carino-learn-${id}`);
+        if (legacy != null) { localStorage.setItem(keyFor(id), legacy); raw = legacy; }
+      }
+      return new Set(JSON.parse(raw) || []);
+    }
     catch { return new Set(); }
   };
   const saveDone = (id, set) =>
@@ -148,6 +157,25 @@
       .map((d) => `<li>${md(d)}</li>`).join("");
     const langLabel = s.lang === "asm" ? "x86-64 · nasm" : "shell";
 
+    // documents attached to this stage (e.g. ISO 27001 templates)
+    const tplDocs = (s.templates || [])
+      .map((tid) => (course.templates || []).find((t) => t.id === tid))
+      .filter(Boolean);
+    const tplHtml = tplDocs.map((t, i) => `
+      <details class="panel tpl">
+        <summary class="panel-h">📄 <span class="tpl-name">${esc(t.name)}</span>
+          <span class="tpl-annex">${esc(t.annex)}</span>
+          <span class="tpl-tier tier-${esc(t.tier)}">${esc(t.tier)}</span>
+        </summary>
+        <div class="tpl-inner">
+          <div class="tpl-top">
+            <p class="tpl-desc">${esc(t.desc)}</p>
+            <button class="copy-btn tpl-copy" type="button" data-tpl="${i}">copy document</button>
+          </div>
+          <pre class="tpl-body">${esc(t.content)}</pre>
+        </div>
+      </details>`).join("");
+
     el.innerHTML = `
       <div class="stage-rail">
         <div class="stage-num">${s.n}</div>
@@ -172,13 +200,14 @@
 
         <div class="concepts">${chips}</div>
 
+        ${s.code ? `
         <div class="code-wrap">
           <div class="code-top">
             <span class="code-lang">${langLabel}</span>
-            <button class="copy-btn" type="button">copy</button>
+            <button class="copy-btn code-copy" type="button">copy</button>
           </div>
           <pre class="code"><code>${highlight(s.code, s.lang)}</code></pre>
-        </div>
+        </div>` : ""}
 
         ${walk ? `
         <details class="panel wk" open>
@@ -186,10 +215,17 @@
           <ol class="walk">${walk}</ol>
         </details>` : ""}
 
+        ${tplHtml ? `
+        <div class="tpl-stack">
+          <div class="tpl-stack-h">📁 Documents for this stage <span class="tpl-count">${tplDocs.length}</span></div>
+          ${tplHtml}
+        </div>` : ""}
+
+        ${s.exercise ? `
         <div class="panel ex">
           <div class="panel-h">🛠 Do this</div>
           <pre class="panel-body">${esc(s.exercise)}</pre>
-        </div>
+        </div>` : ""}
 
         ${drills ? `
         <details class="panel dr">
@@ -197,18 +233,26 @@
           <ul class="drills">${drills}</ul>
         </details>` : ""}
 
+        ${s.note ? `
         <div class="panel nt">
           <div class="panel-h">🧠 Go deeper</div>
           <p class="panel-body">${md(s.note)}</p>
-        </div>
+        </div>` : ""}
       </div>`;
 
-    $(".copy-btn", el).addEventListener("click", async () => {
-      const b = $(".copy-btn", el);
-      try { await navigator.clipboard.writeText(s.code); b.textContent = "copied ✓"; }
-      catch { b.textContent = "select & copy"; }
-      setTimeout(() => (b.textContent = "copy"), 1400);
+    const codeBtn = $(".code-copy", el);
+    if (codeBtn) codeBtn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(s.code); codeBtn.textContent = "copied ✓"; }
+      catch { codeBtn.textContent = "select & copy"; }
+      setTimeout(() => (codeBtn.textContent = "copy"), 1400);
     });
+
+    $$(".tpl-copy", el).forEach((b) => b.addEventListener("click", async () => {
+      const t = tplDocs[+b.dataset.tpl];
+      try { await navigator.clipboard.writeText(t.content); b.textContent = "copied ✓"; }
+      catch { b.textContent = "select & copy"; }
+      setTimeout(() => (b.textContent = "copy document"), 1400);
+    }));
 
     $(".done-toggle input", el).addEventListener("change", (e) => {
       if (e.target.checked) done.add(s.n); else done.delete(s.n);
@@ -244,6 +288,18 @@
 
   function renderCourse(course) {
     const host = $("#courseHost");
+    const viz = (window.COURSE_VIZ || {})[course.id];
+    const labHtml = viz ? `
+      <section class="lab" id="lab">
+        <div class="lab-inner">
+          <div class="lab-head">
+            <span class="track-kicker">Interactive lab</span>
+            <h2>${esc(viz.title)}</h2>
+            <p class="lab-blurb">${md(viz.blurb || "")}</p>
+          </div>
+          <div class="lab-mount" id="labMount"></div>
+        </div>
+      </section>` : "";
     host.innerHTML = `
       <section class="hero">
         <div class="hero-inner">
@@ -261,6 +317,8 @@
           </div>
         </div>
       </section>
+
+      ${labHtml}
 
       <div class="layout">
         <nav class="jump" aria-label="Stages"><div class="jump-title">${esc(course.title)} · the path</div><div id="jumpNav"></div></nav>
@@ -312,6 +370,12 @@
       refreshProgress();
     });
 
+    // mount the interactive visual
+    if (viz) {
+      try { viz.mount($("#labMount", host)); }
+      catch (err) { console.warn("viz mount failed for " + course.id, err); }
+    }
+
     wireScrollSpy(host);
     refreshProgress();
   }
@@ -331,22 +395,39 @@
   }
 
   /* ---------- progress UI (current course + slice tiles) ---------- */
+  function overallProgress() {
+    let n = 0, total = 0;
+    courseList().forEach((c) => {
+      const d = c.id === active ? done : doneFor(c.id);
+      n += d.size; total += c.stages.length;
+    });
+    return { n, total, pct: total ? Math.round((n / total) * 100) : 0 };
+  }
+
   function refreshProgress() {
     const course = window.COURSES[active];
     const total = course ? course.stages.length : 0;
     const n = done.size;
     const pct = total ? Math.round((n / total) * 100) : 0;
+    const all = overallProgress();
 
+    // header ring: current course when one is open, whole platform on the home grid
+    const ringPct = course ? pct : all.pct;
     const fill = $("#progFill"); if (fill) fill.style.width = pct + "%";
     const ptext = $("#progText"); if (ptext) ptext.textContent = `${n} / ${total} complete`;
-    $("#progPct").textContent = pct + "%";
+    $("#progPct").textContent = ringPct + "%";
     $("#progRing").style.background =
-      `conic-gradient(var(--accent) ${pct * 3.6}deg, var(--border) 0deg)`;
-    $("#diagDone").textContent = `${n} / ${total}`;
-    $("#diagPct").textContent = pct + "%";
+      `conic-gradient(var(--accent) ${ringPct * 3.6}deg, var(--border) 0deg)`;
+    $("#diagDone").textContent = course ? `${n} / ${total}` : "—";
+    $("#diagPct").textContent = course ? pct + "%" : "—";
+    const dAll = $("#diagAllDone"); if (dAll) dAll.textContent = `${all.n} / ${all.total}`;
+    const dAllPct = $("#diagAllPct"); if (dAllPct) dAllPct.textContent = all.pct + "%";
+    const oProg = $("#overviewProg");
+    if (oProg) oProg.textContent = `${all.n} / ${all.total} stages · ${all.pct}%`;
 
     const greet = $("#greeting");
-    if (greet) greet.textContent = !course ? "Choose a course." :
+    if (greet) greet.textContent = !course ?
+      (all.n === 0 ? "Pick a module." : `Overall: ${all.n}/${all.total} stages cleared.`) :
       n === 0 ? `${course.title}: ready when you are.` :
       n === total ? `${course.title}: complete. 🏁` :
       `${course.title}: ${n}/${total} cleared.`;
@@ -364,6 +445,14 @@
       const pct = total ? Math.round((d.size / total) * 100) : 0;
       const f = $(".slice-prog-fill", tile); if (f) f.style.width = pct + "%";
       const cnt = $(".slice-count", tile); if (cnt) cnt.textContent = `${d.size} / ${total}`;
+      const ring = $(".slice-ring", tile);
+      if (ring) {
+        ring.style.background = `conic-gradient(var(--accent) ${pct * 3.6}deg, var(--border) 0deg)`;
+        $("span", ring).textContent = pct + "%";
+      }
+      const cb = $(".slice-done input", tile);
+      if (cb) cb.checked = total > 0 && d.size === total;
+      tile.classList.toggle("is-complete", total > 0 && d.size === total);
     });
   }
 
@@ -373,21 +462,41 @@
   function buildSlices() {
     const menu = $("#sliceMenu");
     courseList().forEach((c, i) => {
-      const slice = document.createElement("button");
+      const slice = document.createElement("div");
       slice.className = "slice";
       slice.dataset.id = c.id;
-      slice.type = "button";
+      slice.setAttribute("role", "link");
+      slice.tabIndex = 0;
       slice.innerHTML = `
         <div class="slice-bg"></div>
         <div class="slice-inner">
           <span class="slice-num">${String(i + 1).padStart(2, "0")}</span>
+          <div class="slice-ring" aria-hidden="true"><span>0%</span></div>
           <span class="slice-icon">${svg(c.icon)}</span>
           <h2 class="slice-title">${esc(c.title)}</h2>
           <p class="slice-blurb">${esc(c.blurb)}</p>
           <div class="slice-prog"><div class="slice-prog-fill"></div></div>
           <span class="slice-count">0 / ${c.stages.length}</span>
+          <label class="slice-done" title="Tick when you have finished every stage of this module">
+            <input type="checkbox" aria-label="Mark ${esc(c.title)} module complete">
+            <span>module complete</span>
+          </label>
         </div>`;
-      slice.addEventListener("click", () => { location.hash = "#" + c.id; });
+      slice.addEventListener("click", (e) => {
+        if (e.target.closest(".slice-done")) return;   // checkbox, not navigation
+        location.hash = "#" + c.id;
+      });
+      slice.addEventListener("keydown", (e) => {
+        if ((e.key === "Enter" || e.key === " ") && !e.target.closest(".slice-done")) {
+          e.preventDefault(); location.hash = "#" + c.id;
+        }
+      });
+      $(".slice-done input", slice).addEventListener("change", (e) => {
+        const set = e.target.checked ? new Set(c.stages.map((s) => s.n)) : new Set();
+        saveDone(c.id, set);
+        if (c.id === active) { done = doneFor(c.id); renderCourse(c); }
+        refreshProgress();
+      });
       menu.appendChild(slice);
     });
   }
@@ -458,6 +567,8 @@
     }
     buildSlices();
     wireDiag();
+    const dCourses = $("#diagCourses");
+    if (dCourses) dCourses.textContent = String(courseList().length);
     $("#brandHome").addEventListener("click", (e) => { e.preventDefault(); location.hash = ""; });
     window.addEventListener("hashchange", route);
     tickClock(); setInterval(tickClock, 1000);
