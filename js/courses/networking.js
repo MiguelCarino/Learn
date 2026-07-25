@@ -43,7 +43,7 @@ window.COURSES["networking"] = {
         ["Link / Data-link", "next hop on this wire", "MAC address, frame", "Ethernet, Wi-Fi, ARP"],
         ["Physical", "actual signal", "bits on copper/fibre/radio", "Cat6, fibre, PoE"],
       ],
-      foot: "The 7-layer OSI model and the 4-layer TCP/IP model describe the same idea — data is wrapped layer by layer as it goes down, and unwrapped on the way up. Live tools for all of this: `https://network.carino.systems`",
+      foot: "The 7-layer OSI model and the 4-layer TCP/IP model describe the same idea — data is wrapped layer by layer as it goes down, and unwrapped on the way up. Live tools for all of this: `https://topo.carino.systems`",
     },
     {
       kind: "table",
@@ -123,7 +123,7 @@ window.COURSES["networking"] = {
         ["ONT", "Optical Network Terminal", "converts an ISP's fibre signal into Ethernet"],
         ["DoH / DoT", "DNS over HTTPS / over TLS", "encrypted DNS lookups (port 443 / port 853)"],
       ],
-      foot: "Rule of thumb in this course: every acronym is spelled out on first use in each stage, then abbreviated. Live tools: `https://network.carino.systems`",
+      foot: "Rule of thumb in this course: every acronym is spelled out on first use in each stage, then abbreviated. Live tools: `https://topo.carino.systems`",
     },
   ],
 
@@ -695,7 +695,7 @@ printf 'GET / HTTP/1.1\\r\\nHost: example.com\\r\\nConnection: close\\r\\n\\r\\n
         "You can't secure or troubleshoot what you can't see. Discovery tools build a picture of a network: " +
         "which hosts are alive, what services they run, and how they're named. Learn `nmap`, the ARP table and " +
         "mDNS and you can walk into any LAN and map it — a skill that's equal parts sysadmin, security and " +
-        "plain curiosity. (Live, browser-based versions of these tools live at `https://network.carino.systems`.)",
+        "plain curiosity. (Live, browser-based versions of these tools live at `https://topo.carino.systems`.)",
       concepts: [
         "ip neigh — the ARP table",
         "nmap -sn — host discovery",
@@ -1037,7 +1037,7 @@ sudo firewall-cmd --remove-port=8000/tcp   # runtime-close it; now debug why it 
         "listening (service/bind-address), while 'timeout' means it was silently dropped (firewall/routing) — that " +
         "one distinction, plus the loopback-vs-real-IP-vs-name ladder, resolves the overwhelming majority of " +
         "real-world network problems. For live, browser-based versions of these tools to keep practising, visit " +
-        "`https://network.carino.systems`.",
+        "`https://topo.carino.systems`.",
     },
   ],
 };

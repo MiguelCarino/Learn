@@ -752,7 +752,7 @@ git commit -m "catalog: fix JP art path (closes #12)"   # auto-closes on merge
 # Pages: the deployment model of the whole fleet
 #   Settings -> Pages: deploy from branch (main, / or /docs) or via Actions
 #   a CNAME file at the repo root = the custom domain:
-cat CNAME                              # musicgrid.carino.systems
+cat CNAME                              # music.carino.systems
 # push to main -> build -> live in ~a minute. main IS production.
 
 # protection: make the gate mandatory (even for yourself)
