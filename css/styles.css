@@ -65,19 +65,21 @@ body::before {
 .header-left  { display: flex; align-items: center; gap: 22px; min-width: 0; }
 .header-right { display: flex; align-items: center; gap: 12px; }
 
+.cn-brand { display: flex; align-items: center; flex-shrink: 0; }
 .brand-name {
   font-family: var(--display); font-size: 1.7rem; font-weight: 900; line-height: 1;
   background: linear-gradient(130deg, #fef08a 0%, #eab308 50%, #b45309 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent; white-space: nowrap;
 }
-.brand-name .app-tag {
-  -webkit-text-fill-color: var(--accent);
+.app-tag {
+  -webkit-text-fill-color: var(--accent); color: var(--accent);
   font-family: var(--mono); font-size: .62rem; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase;
   border: 1px solid var(--border); border-radius: 4px;
-  padding: 3px 7px; margin-left: 12px; vertical-align: middle;
+  padding: 3px 7px; margin-left: 12px; transition: .2s;
 }
+.app-tag:hover { border-color: var(--accent); background: rgba(234,179,8,.12); }
 .header-clock { display: flex; align-items: baseline; gap: 10px;
   border-left: 1px solid var(--border); padding-left: 22px; }
 .clock-time { font-family: var(--mono); font-size: 1.15rem; font-weight: 700; }
@@ -161,7 +163,7 @@ body::before {
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 .lede { font-size: 1.12rem; color: var(--text-sec); max-width: 760px; }
-.lede code, .hero-points code {
+.lede code {
   background: var(--bg-elev); border: 1px solid var(--border-soft);
   padding: 1px 6px; border-radius: 4px; font-size: .9em; color: var(--accent);
 }
@@ -184,11 +186,6 @@ body::before {
 .prog-fill { height: 100%; width: 0; border-radius: 999px;
   background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .4s ease; }
 .prog-label { font-family: var(--mono); font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; }
-
-.hero-points { list-style: none; display: grid; gap: 8px; max-width: 760px; }
-.hero-points li { position: relative; padding-left: 24px; color: var(--text-sec); font-size: .95rem; }
-.hero-points li::before { content: "▸"; position: absolute; left: 4px; color: var(--accent); }
-.hero-points b { color: var(--text); }
 
 /* ===================================================================== */
 /* Layout: jump nav + roadmap                                            */

@@ -666,7 +666,6 @@
     wireDiag();
     const dCourses = $("#diagCourses");
     if (dCourses) dCourses.textContent = String(courseList().length);
-    $("#brandHome").addEventListener("click", (e) => { e.preventDefault(); location.hash = ""; });
     window.addEventListener("hashchange", route);
     tickClock(); setInterval(tickClock, 1000);
     route();
