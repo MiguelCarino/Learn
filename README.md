@@ -1,4 +1,4 @@
-# CarinoLearn
+# Carino Learn
 
 Practical, **beginner-friendly** roadmaps for the low-level Linux stack, the web, hospital
 IT, security and the frontier. Thirteen hands-on courses, one site. Every stage opens with why it
