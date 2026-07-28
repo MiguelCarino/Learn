@@ -34,6 +34,7 @@
     ram: '<rect x="2" y="7" width="20" height="10" rx="1.5"></rect><line x1="6" y1="10" x2="6" y2="14"></line><line x1="10" y1="10" x2="10" y2="14"></line><line x1="14" y1="10" x2="14" y2="14"></line><line x1="18" y1="10" x2="18" y2="14"></line><line x1="5" y1="17" x2="5" y2="20"></line><line x1="12" y1="17" x2="12" y2="20"></line><line x1="19" y1="17" x2="19" y2="20"></line>',
     branch: '<line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path>',
     atom: '<circle cx="12" cy="12" r="1.6"></circle><ellipse cx="12" cy="12" rx="10" ry="4.2"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"></ellipse>',
+    topology: '<circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>',
   };
   const svg = (name) =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.cpu}</svg>`;
@@ -170,6 +171,17 @@
       (comment ? `<span class="t-com">${esc(comment)}</span>` : "");
   }
 
+  /* YAML (netplan style): colour keys, values and comments */
+  function yamlLine(line) {
+    const ci = line.indexOf("#");
+    const body = ci >= 0 ? line.slice(0, ci) : line;
+    const comment = ci >= 0 ? `<span class="t-com">${esc(line.slice(ci))}</span>` : "";
+    const m = /^(\s*(?:-\s+)?)([A-Za-z0-9_."/*-]+)(:)(\s.*|$)/.exec(body);
+    if (!m) return esc(body) + comment;
+    const val = m[4] ? `<span class="t-str">${esc(m[4])}</span>` : "";
+    return `${m[1]}<span class="t-ins">${esc(m[2])}</span>:${val}${comment}`;
+  }
+
   function highlight(src, lang) {
     const lines = src.split("\n");
     if (lang === "asm")
@@ -178,13 +190,14 @@
     if (lang === "dicom") return lines.map(dcmLine).join("\n");
     if (lang === "py")
       return lines.map((l) => hlLine(l, "#", PY_RE, pyClassify)).join("\n");
+    if (lang === "yaml")  return lines.map(yamlLine).join("\n");
     if (lang === "json" || lang === "txt") return esc(src);
     return lines.map((l) => hlLine(l, "#", SH_RE, shClassify)).join("\n");
   }
 
   const LANG_LABEL = {
     asm: "x86-64 · nasm", hl7: "HL7 v2 · ER7", dicom: "DICOM · dcmdump",
-    json: "JSON", txt: "plain text", py: "Python",
+    json: "JSON", txt: "plain text", py: "Python", yaml: "YAML · netplan",
   };
 
   /* =================================================================== */
