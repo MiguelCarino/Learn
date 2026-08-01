@@ -14,6 +14,10 @@
   const esc = (s) =>
     String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+  /* i18n: chrome strings go through the site dictionary (i18n.js). It loads
+     deferred, so guard — English falls through untouched either way. */
+  const tt = (s) => (typeof window.t === "function" ? window.t(s) : s);
+
   /* tiny inline markdown: `code` and **bold** (input is escaped first) */
   const md = (s) =>
     esc(s)
@@ -238,7 +242,7 @@
         <div class="tpl-inner">
           <div class="tpl-top">
             <p class="tpl-desc">${esc(t.desc)}</p>
-            <button class="copy-btn tpl-copy" type="button" data-tpl="${i}">copy document</button>
+            <button class="copy-btn tpl-copy" type="button" data-tpl="${i}">${tt("copy document")}</button>
           </div>
           <pre class="tpl-body">${esc(t.content)}</pre>
         </div>
@@ -256,10 +260,10 @@
             <h3 class="stage-title">${esc(s.title)}</h3>
           </div>
           <div class="stage-meta">
-            <span class="stage-time" title="Suggested time">⏱ ${esc(s.time)}</span>
+            <span class="stage-time" title="${tt("Suggested time")}">⏱ ${esc(s.time)}</span>
             <label class="done-toggle">
               <input type="checkbox" ${isDone ? "checked" : ""} aria-label="Mark stage ${s.n} complete">
-              <span>Done</span>
+              <span>${tt("Done")}</span>
             </label>
           </div>
         </header>
@@ -272,54 +276,54 @@
         <div class="code-wrap">
           <div class="code-top">
             <span class="code-lang">${langLabel}</span>
-            <button class="copy-btn code-copy" type="button">copy</button>
+            <button class="copy-btn code-copy" type="button">${tt("copy")}</button>
           </div>
           <pre class="code"><code>${highlight(s.code, s.lang)}</code></pre>
         </div>` : ""}
 
         ${walk ? `
         <details class="panel wk" open>
-          <summary class="panel-h">📖 Line-by-line</summary>
+          <summary class="panel-h">📖 ${tt("Line-by-line")}</summary>
           <ol class="walk">${walk}</ol>
         </details>` : ""}
 
         ${tplHtml ? `
         <div class="tpl-stack">
-          <div class="tpl-stack-h">📁 Documents for this stage <span class="tpl-count">${tplDocs.length}</span></div>
+          <div class="tpl-stack-h">📁 ${tt("Documents for this stage")} <span class="tpl-count">${tplDocs.length}</span></div>
           ${tplHtml}
         </div>` : ""}
 
         ${s.exercise ? `
         <div class="panel ex">
-          <div class="panel-h">🛠 Do this</div>
+          <div class="panel-h">🛠 ${tt("Do this")}</div>
           <pre class="panel-body">${esc(s.exercise)}</pre>
         </div>` : ""}
 
         ${drills ? `
         <details class="panel dr">
-          <summary class="panel-h">🎯 Quick drills</summary>
+          <summary class="panel-h">🎯 ${tt("Quick drills")}</summary>
           <ul class="drills">${drills}</ul>
         </details>` : ""}
 
         ${s.note ? `
         <div class="panel nt">
-          <div class="panel-h">🧠 Go deeper</div>
+          <div class="panel-h">🧠 ${tt("Go deeper")}</div>
           <p class="panel-body">${md(s.note)}</p>
         </div>` : ""}
       </div>`;
 
     const codeBtn = $(".code-copy", el);
     if (codeBtn) codeBtn.addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText(s.code); codeBtn.textContent = "copied ✓"; }
-      catch { codeBtn.textContent = "select & copy"; }
-      setTimeout(() => (codeBtn.textContent = "copy"), 1400);
+      try { await navigator.clipboard.writeText(s.code); codeBtn.textContent = tt("copied ✓"); }
+      catch { codeBtn.textContent = tt("select & copy"); }
+      setTimeout(() => (codeBtn.textContent = tt("copy")), 1400);
     });
 
     $$(".tpl-copy", el).forEach((b) => b.addEventListener("click", async () => {
       const t = tplDocs[+b.dataset.tpl];
-      try { await navigator.clipboard.writeText(t.content); b.textContent = "copied ✓"; }
-      catch { b.textContent = "select & copy"; }
-      setTimeout(() => (b.textContent = "copy document"), 1400);
+      try { await navigator.clipboard.writeText(t.content); b.textContent = tt("copied ✓"); }
+      catch { b.textContent = tt("select & copy"); }
+      setTimeout(() => (b.textContent = tt("copy document")), 1400);
     }));
 
     $(".done-toggle input", el).addEventListener("change", (e) => {
@@ -366,13 +370,13 @@
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "copy-btn cmd-copy";
-      btn.textContent = "copy";
+      btn.textContent = tt("copy");
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
         const code = $("code", line);
-        try { await navigator.clipboard.writeText(code ? code.textContent : ""); btn.textContent = "copied ✓"; }
-        catch { btn.textContent = "select & copy"; }
-        setTimeout(() => (btn.textContent = "copy"), 1400);
+        try { await navigator.clipboard.writeText(code ? code.textContent : ""); btn.textContent = tt("copied ✓"); }
+        catch { btn.textContent = tt("select & copy"); }
+        setTimeout(() => (btn.textContent = tt("copy")), 1400);
       });
       line.appendChild(btn);
     });
@@ -385,7 +389,7 @@
       <section class="lab" id="lab">
         <div class="lab-inner">
           <div class="lab-head">
-            <span class="track-kicker">Interactive lab</span>
+            <span class="track-kicker">${tt("Interactive lab")}</span>
             <h2>${esc(viz.title)}</h2>
             <p class="lab-blurb">${md(viz.blurb || "")}</p>
           </div>
@@ -396,12 +400,12 @@
       <section class="hero">
         <div class="hero-inner">
           <span class="kicker">${esc(course.tag)}</span>
-          <h1>${esc(course.title)} <em>course</em></h1>
+          <h1>${esc(course.title)} <em>${tt("course")}</em></h1>
           <p class="lede">${md(course.intro)}</p>
           <div class="hero-cta">
-            <a class="btn btn-accent" href="#${course.id}/stage-0">Start at stage 0 →</a>
-            <a class="btn btn-ghost" href="#${course.id}/reference">Cheat-sheet</a>
-            <button class="btn btn-ghost" id="resetBtn" type="button">Reset progress</button>
+            <a class="btn btn-accent" href="#${course.id}/stage-0">${tt("Start at stage 0 →")}</a>
+            <a class="btn btn-ghost" href="#${course.id}/reference">${tt("Cheat-sheet")}</a>
+            <button class="btn btn-ghost" id="resetBtn" type="button">${tt("Reset progress")}</button>
           </div>
           <div class="prog-bar-wrap">
             <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
@@ -413,11 +417,11 @@
       ${labHtml}
 
       <div class="layout">
-        <nav class="jump" aria-label="Stages"><div class="jump-title">${esc(course.title)} · the path</div><div id="jumpNav"></div></nav>
+        <nav class="jump" aria-label="Stages"><div class="jump-title">${esc(course.title)} · ${tt("the path")}</div><div id="jumpNav"></div></nav>
         <div class="roadmap-col">
           <div id="roadmap" class="roadmap"></div>
           <section id="reference" class="reference">
-            <div class="track-head"><span class="track-kicker">Keep open while you work</span><h2>Cheat-sheet</h2></div>
+            <div class="track-head"><span class="track-kicker">${tt("Keep open while you work")}</span><h2>${tt("Cheat-sheet")}</h2></div>
             <div class="ref-grid" id="refGrid"></div>
           </section>
         </div>
@@ -433,7 +437,7 @@
         curTrack = tr;
         const h = document.createElement("div");
         h.className = "track-head";
-        h.innerHTML = `<span class="track-kicker">Track</span><h2>${esc(tr.label)}</h2>`;
+        h.innerHTML = `<span class="track-kicker">${tt("Track")}</span><h2>${esc(tr.label)}</h2>`;
         roadmap.appendChild(h);
       }
       roadmap.appendChild(stageCard(course, s));
@@ -442,7 +446,7 @@
         sec.className = "lab lab-inline";
         sec.innerHTML = `
           <div class="lab-head">
-            <span class="track-kicker">Interactive lab</span>
+            <span class="track-kicker">${tt("Interactive lab")}</span>
             <h2>${esc(L.title)}</h2>
             <p class="lab-blurb">${md(L.blurb || "")}</p>
           </div>
@@ -470,7 +474,7 @@
 
     // wire reset + scrollspy
     $("#resetBtn", host).addEventListener("click", () => {
-      if (!confirm(`Reset your progress on the ${course.title} course?`)) return;
+      if (!confirm(`${course.title} — ${tt("Reset your progress on this course?")}`)) return;
       done.clear(); saveDone(active, done);
       $$(".done-toggle input", host).forEach((cb) => (cb.checked = false));
       $$(".stage", host).forEach((c) => c.classList.remove("is-done"));
@@ -521,7 +525,7 @@
     // header ring: current course when one is open, whole platform on the home grid
     const ringPct = course ? pct : all.pct;
     const fill = $("#progFill"); if (fill) fill.style.width = pct + "%";
-    const ptext = $("#progText"); if (ptext) ptext.textContent = `${n} / ${total} complete`;
+    const ptext = $("#progText"); if (ptext) ptext.textContent = `${n} / ${total} ${tt("complete")}`;
     $("#progPct").textContent = ringPct + "%";
     $("#progRing").style.background =
       `conic-gradient(var(--accent) ${ringPct * 3.6}deg, var(--border) 0deg)`;
@@ -530,14 +534,14 @@
     const dAll = $("#diagAllDone"); if (dAll) dAll.textContent = `${all.n} / ${all.total}`;
     const dAllPct = $("#diagAllPct"); if (dAllPct) dAllPct.textContent = all.pct + "%";
     const oProg = $("#overviewProg");
-    if (oProg) oProg.textContent = `${all.n} / ${all.total} stages · ${all.pct}%`;
+    if (oProg) oProg.textContent = `${all.n} / ${all.total} ${tt("stages")} · ${all.pct}%`;
 
     const greet = $("#greeting");
     if (greet) greet.textContent = !course ?
-      (all.n === 0 ? "Pick a module." : `Overall: ${all.n}/${all.total} stages cleared.`) :
-      n === 0 ? `${course.title}: ready when you are.` :
-      n === total ? `${course.title}: complete. 🏁` :
-      `${course.title}: ${n}/${total} cleared.`;
+      (all.n === 0 ? tt("Pick a module.") : `${tt("Overall:")} ${all.n}/${all.total} ${tt("stages cleared.")}`) :
+      n === 0 ? `${course.title}: ${tt("ready when you are.")}` :
+      n === total ? `${course.title}: ${tt("complete.")} 🏁` :
+      `${course.title}: ${n}/${total} ${tt("cleared.")}`;
 
     $$(".jump-item").forEach((a) => a.classList.toggle("done", done.has(+a.dataset.n)));
     refreshSliceTiles();
@@ -584,9 +588,9 @@
           <p class="slice-blurb">${esc(c.blurb)}</p>
           <div class="slice-prog"><div class="slice-prog-fill"></div></div>
           <span class="slice-count">0 / ${c.stages.length}</span>
-          <label class="slice-done" title="Tick when you have finished every stage of this module">
+          <label class="slice-done" title="${tt("Tick when you have finished every stage of this module")}">
             <input type="checkbox" aria-label="Mark ${esc(c.title)} module complete">
-            <span>module complete</span>
+            <span data-i18n>module complete</span>
           </label>
         </div>`;
       slice.addEventListener("click", (e) => {
@@ -672,7 +676,7 @@
   /* ---------- boot ---------- */
   document.addEventListener("DOMContentLoaded", () => {
     if (!window.COURSES || !courseList().length) {
-      $("#sliceMenu").innerHTML = '<p style="margin:auto;color:#888">No courses loaded.</p>';
+      $("#sliceMenu").innerHTML = `<p style="margin:auto;color:#888">${tt("No courses loaded.")}</p>`;
       return;
     }
     buildSlices();
@@ -680,6 +684,12 @@
     const dCourses = $("#diagCourses");
     if (dCourses) dCourses.textContent = String(courseList().length);
     window.addEventListener("hashchange", route);
+    // fleet language switch: re-render the open course so its JS-built
+    // chrome picks up the new dictionary (static chrome is handled by i18n.js)
+    window.addEventListener("carino:langchange", () => {
+      if (active && window.COURSES[active]) renderCourse(window.COURSES[active]);
+      else refreshProgress();
+    });
     tickClock(); setInterval(tickClock, 1000);
     route();
   });

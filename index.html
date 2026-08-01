@@ -38,30 +38,30 @@
         </a>
       </div>
       <button class="status-toggle" id="diagToggle" title="Progress" aria-haspopup="true" aria-expanded="false" aria-controls="diagBox">
-        <span>Status</span><div class="pulse-dot"></div>
+        <span data-i18n>Status</span><div class="pulse-dot"></div>
       </button>
     </div>
 
     <div class="diag-dropdown" id="diagBox">
-      <div class="diag-section">Current module</div>
-      <div class="diag-row"><span class="diag-lbl">Stages cleared</span><span class="diag-val" id="diagDone">0 / 0</span></div>
-      <div class="diag-row"><span class="diag-lbl">Completion</span><span class="diag-val" id="diagPct">0%</span></div>
-      <div class="diag-section">Platform</div>
-      <div class="diag-row"><span class="diag-lbl">Modules</span><span class="diag-val" id="diagCourses">0</span></div>
-      <div class="diag-row"><span class="diag-lbl">All stages</span><span class="diag-val" id="diagAllDone">0 / 0</span></div>
-      <div class="diag-row"><span class="diag-lbl">Overall</span><span class="diag-val" id="diagAllPct">0%</span></div>
-      <div class="diag-row"><span class="diag-lbl">Progress</span><span class="diag-val">saved locally</span></div>
-      <div class="diag-section">Session</div>
-      <div class="diag-row"><span class="diag-lbl">Local time</span><span class="diag-val" id="diagClock">--:--:--</span></div>
+      <div class="diag-section" data-i18n>Current module</div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>Stages cleared</span><span class="diag-val" id="diagDone">0 / 0</span></div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>Completion</span><span class="diag-val" id="diagPct">0%</span></div>
+      <div class="diag-section" data-i18n>Platform</div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>Modules</span><span class="diag-val" id="diagCourses">0</span></div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>All stages</span><span class="diag-val" id="diagAllDone">0 / 0</span></div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>Overall</span><span class="diag-val" id="diagAllPct">0%</span></div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>Progress</span><span class="diag-val" data-i18n>saved locally</span></div>
+      <div class="diag-section" data-i18n>Session</div>
+      <div class="diag-row"><span class="diag-lbl" data-i18n>Local time</span><span class="diag-val" id="diagClock">--:--:--</span></div>
     </div>
   </header>
 
   <!-- ============================ Module grid ============================ -->
   <div class="overview-head">
-    <span class="kicker">Carino Learn · interactive modules</span>
+    <span class="kicker" data-i18n>Carino Learn · interactive modules</span>
     <h1 class="overview-title">Learn the machine, from the <em>silicon up</em>.</h1>
-    <p class="overview-sub">Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.</p>
-    <div class="overview-progress"><span class="overview-progress-lbl">Overall progress</span><span class="overview-progress-val" id="overviewProg">0 / 0 stages · 0%</span></div>
+    <p class="overview-sub" data-i18n>Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.</p>
+    <div class="overview-progress"><span class="overview-progress-lbl" data-i18n>Overall progress</span><span class="overview-progress-val" id="overviewProg">0 / 0 stages · 0%</span></div>
   </div>
   <nav class="slice-menu" id="sliceMenu" aria-label="Module grid"></nav>
 
@@ -71,6 +71,7 @@
   <!-- courses register themselves into window.COURSES -->
   <script src="carino-clock.js" defer></script>
   <script src="carino-lang.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="js/courses/assembly.js"></script>
   <script src="js/courses/pcarch.js"></script>
   <script src="js/courses/bash.js"></script>
