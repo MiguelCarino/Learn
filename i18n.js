@@ -9,6 +9,10 @@
 
 const I18N = {
     es: {
+        'Late shift.': 'Turno nocturno.',
+        'Good morning.': 'Buenos días.',
+        'Good afternoon.': 'Buenas tardes.',
+        'Good evening.': 'Buenas noches.',
         // Overview head
         'Carino Learn · interactive modules': 'Carino Learn · módulos interactivos',
         'Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.': 'Módulos prácticos y aptos para principiantes: cada uno con un laboratorio interactivo para experimentar y una lista que puedes ir marcando. El progreso se guarda en tu navegador.',
@@ -66,6 +70,10 @@ const I18N = {
         'No courses loaded.': 'No hay cursos cargados.',
     },
     'pt-BR': {
+        'Late shift.': 'Turno da noite.',
+        'Good morning.': 'Bom dia.',
+        'Good afternoon.': 'Boa tarde.',
+        'Good evening.': 'Boa noite.',
         'Carino Learn · interactive modules': 'Carino Learn · módulos interativos',
         'Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.': 'Módulos práticos e amigáveis para iniciantes: cada um com um laboratório interativo para explorar e uma lista para ir marcando. O progresso fica salvo no seu navegador.',
         'Overall progress': 'Progresso geral',
@@ -117,6 +125,10 @@ const I18N = {
         'No courses loaded.': 'Nenhum curso carregado.',
     },
     ja: {
+        'Late shift.': '夜勤お疲れさま。',
+        'Good morning.': 'おはようございます。',
+        'Good afternoon.': 'こんにちは。',
+        'Good evening.': 'こんばんは。',
         'Carino Learn · interactive modules': 'Carino Learn · インタラクティブモジュール',
         'Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.': '実践的で初心者にやさしいモジュール。各モジュールに、触って試せるインタラクティブなラボと、チェックして進められるリストが付いています。進捗はブラウザに保存されます。',
         'Overall progress': '全体の進捗',
@@ -168,6 +180,10 @@ const I18N = {
         'No courses loaded.': 'コースが読み込まれていません。',
     },
     ru: {
+        'Late shift.': 'Ночная смена.',
+        'Good morning.': 'Доброе утро.',
+        'Good afternoon.': 'Добрый день.',
+        'Good evening.': 'Добрый вечер.',
         'Carino Learn · interactive modules': 'Carino Learn · интерактивные модули',
         'Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.': 'Практичные модули для начинающих: в каждом — интерактивная лаборатория, которую можно потрогать, и чек-лист для отметок. Прогресс сохраняется в браузере.',
         'Overall progress': 'Общий прогресс',
