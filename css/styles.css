@@ -144,10 +144,16 @@ body::before {
 .diag-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
 .diag-section {
   font-family: var(--mono); font-size: .6rem; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--accent); margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft);
+  color: var(--accent); margin: 10px 0 5px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft);
 }
 .diag-section:first-child { margin-top: 0; }
-.diag-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: .8rem; }
+.diag-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: .8rem; }
+
+/* Two short readings share one line. Each half keeps its natural width, so a
+   translation that outgrows the half wraps the pair back into full-width rows
+   instead of truncating — the panel is only 280px, and es/ru labels are long. */
+.diag-pair { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 20px; }
+.diag-pair > .diag-row { flex: 0 1 auto; min-width: max-content; gap: 8px; }
 .diag-lbl { color: var(--text-muted); }
 .diag-val { font-family: var(--mono); color: var(--text); }
 
