@@ -1,5 +1,7 @@
 # Carino Learn
 
+**[Start learning →](https://learn.carino.systems/)** — free, runs in your browser, no account.
+
 Practical, **beginner-friendly** roadmaps for the low-level Linux stack, the web, hospital
 IT, security and the frontier. Fourteen hands-on courses, one site. Every stage opens with why it
 matters, ships a runnable snippet with a **line-by-line walkthrough**, and gives you small
