@@ -28,78 +28,85 @@
   <!-- /carino:head -->
   <link rel="icon" href="logo.webp" type="image/webp">
   <link rel="stylesheet" href="fonts/carino-fonts.css">
+  <link rel="stylesheet" href="carino-ui.css">
   <link href="css/styles.css" rel="stylesheet">
 </head>
 <body class="state-overview">
 
-  <!-- ============================ Carino navbar ============================ -->
-  <header class="top-header">
-    <div class="header-left">
-      <span class="cn-brand">
-        <a class="brand-name" href="https://carino.systems/" title="Carino Systems — back to hub">Carino</a>
-        <a class="app-tag" href="./" title="Learn — reload">Learn</a>
-      </span>
-      <div class="header-clock" aria-hidden="true">
-        <span class="clock-time" id="clockLocal">00:00:00</span>
-        <span class="clock-tz" id="tzName">local</span>
-        <span class="brand-greeting" id="greeting">Choose a course.</span>
+  <!-- Navbar controls: carino-navbar.js moves this node into the bar. -->
+  <div data-carino-actions>
+    <div class="cs-menu" data-priority="1">
+      <button type="button" class="cs-btn" id="progBtn" aria-haspopup="true" aria-expanded="false"><span data-i18n>Progress</span> <span id="progPct">0%</span> <span class="cs-caret">▾</span></button>
+      <div class="cs-menu-panel" role="menu" hidden>
+        <div class="prog-rows">
+          <div class="diag-row" id="rowModule" hidden><span class="diag-lbl" id="rowModuleName" data-i18n>This module</span><span class="diag-val" id="diagDone">0 / 0</span></div>
+          <div class="diag-row"><span class="diag-lbl" data-i18n>All stages</span><span class="diag-val" id="diagAllDone">0 / 0</span></div>
+          <div class="diag-row"><span class="diag-lbl" data-i18n>Modules</span><span class="diag-val" id="diagCourses">0</span></div>
+          <div class="diag-row"><span class="diag-lbl" data-i18n>Saved</span><span class="diag-val" data-i18n>in this browser</span></div>
+        </div>
+        <div class="cs-menu-div"></div>
+        <button type="button" class="cs-menu-item" role="menuitem" id="exportBtn"><span data-i18n>Export progress</span> <span class="cs-menu-note">JSON</span></button>
+        <button type="button" class="cs-menu-item" role="menuitem" id="importBtn"><span data-i18n>Import progress</span> <span class="cs-menu-note">JSON</span></button>
+        <div class="cs-menu-div"></div>
+        <button type="button" class="cs-menu-item danger" role="menuitem" id="resetBtn" data-i18n>Reset progress</button>
       </div>
     </div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+  </div>
 
-    <div class="header-right">
-      <div class="prog-mini" title="Course progress">
-        <div class="prog-ring" id="progRing"><span id="progPct">0%</span></div>
+  <!-- ============================ Overview hero ============================ -->
+  <header class="landing-hero overview-head">
+    <div class="lh-wrap">
+      <div class="lh-mark" aria-hidden="true">
+        <img class="mark" src="logo.svg" alt="" width="100" height="100">
       </div>
-      <div class="social-row">
-        <a href="https://carino.systems/legal.html" class="icon-btn" id="cnLegal" title="Legal notice &amp; privacy" aria-label="Legal notice &amp; privacy">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        </a>
-        <a href="https://github.com/MiguelCarino/Learn" target="_blank" rel="noopener" class="icon-btn" title="Learn on GitHub" aria-label="GitHub">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-        </a>
-        <a href="https://www.linkedin.com/in/miguelcarino94/" target="_blank" rel="noopener" class="icon-btn" title="LinkedIn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-        </a>
+      <h1><span data-i18n>Learn the machine,</span><br><span class="gold" data-i18n>from the silicon up.</span></h1>
+      <p class="lh-lede"><strong>Carino Learn</strong> <span data-i18n>has hands-on modules for beginners. Each one opens with a lab you can try and a list of stages you tick off.</span></p>
+      <div class="overview-progress">
+        <span class="progress-pill" id="overviewPill"><span id="overviewProg">0 / 0 stages · 0%</span><span class="progress"><span id="overviewFill" style="width:0%"></span></span></span>
+        <p class="privacy-line" data-i18n>Progress is saved in this browser only. No account, nothing sent anywhere.</p>
       </div>
-      <button class="status-toggle" id="diagToggle" title="Progress" aria-haspopup="true" aria-expanded="false" aria-controls="diagBox">
-        <span data-i18n>Status</span><div class="pulse-dot"></div>
-      </button>
-    </div>
-
-    <div class="diag-dropdown" id="diagBox">
-      <div class="diag-section" data-i18n>Current module</div>
-      <div class="diag-pair">
-        <div class="diag-row"><span class="diag-lbl" data-i18n>Stages cleared</span><span class="diag-val" id="diagDone">0 / 0</span></div>
-        <div class="diag-row"><span class="diag-lbl" data-i18n>Completion</span><span class="diag-val" id="diagPct">0%</span></div>
-      </div>
-      <div class="diag-section" data-i18n>Platform</div>
-      <div class="diag-pair">
-        <div class="diag-row"><span class="diag-lbl" data-i18n>Modules</span><span class="diag-val" id="diagCourses">0</span></div>
-        <div class="diag-row"><span class="diag-lbl" data-i18n>All stages</span><span class="diag-val" id="diagAllDone">0 / 0</span></div>
-      </div>
-      <div class="diag-row"><span class="diag-lbl" data-i18n>Overall</span><span class="diag-val" id="diagAllPct">0%</span></div>
-      <div class="diag-row"><span class="diag-lbl" data-i18n>Progress</span><span class="diag-val" data-i18n>saved locally</span></div>
-      <div class="diag-section" data-i18n>Session</div>
-      <div class="diag-row"><span class="diag-lbl" data-i18n>Local time</span><span class="diag-val" id="diagClock">--:--:--</span></div>
     </div>
   </header>
 
   <!-- ============================ Module grid ============================ -->
-  <div class="overview-head">
-    <span class="kicker" data-i18n>Carino Learn · interactive modules</span>
-    <h1 class="overview-title">Learn the machine, from the <em>silicon up</em>.</h1>
-    <p class="overview-sub" data-i18n>Hands-on, beginner-friendly modules — each with an interactive lab you can poke at and a checklist you can tick off. Progress is saved in your browser.</p>
-    <div class="overview-progress"><span class="overview-progress-lbl" data-i18n>Overall progress</span><span class="overview-progress-val" id="overviewProg">0 / 0 stages · 0%</span></div>
-  </div>
-  <nav class="slice-menu" id="sliceMenu" aria-label="Module grid"></nav>
+  <nav class="slice-menu" id="sliceMenu" aria-label="Modules"></nav>
 
-  <!-- ============================ Selected course renders here ============================ -->
+  <div class="page-alerts" id="pageAlerts"></div>
+
+  <!-- ============================ Selected module renders here ============================ -->
   <main id="courseHost" class="course-host"></main>
 
+  <footer class="site-foot" id="siteFoot">
+    <div class="sf-links">
+      <a href="https://github.com/MiguelCarino/Learn" target="_blank" rel="noopener" data-i18n>Source</a>
+      <a href="https://carino.systems/legal.html" data-i18n>Legal &amp; privacy</a>
+      <a href="https://carino.systems/" data-i18n>All Carino sites</a>
+    </div>
+    <p class="privacy-line" data-i18n>Progress is saved in this browser only. No account, nothing sent anywhere.</p>
+    <div class="sf-line" data-i18n>Carino Learn · AGPL-3.0 · part of carino.systems</div>
+  </footer>
+
+  <!-- Reset confirmation (Branding modal; toggled with [hidden]) -->
+  <div class="modal-scrim" id="resetModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+      <div class="modal-head">
+        <div><div class="modal-title" id="resetTitle" data-i18n>Reset progress</div><div class="modal-sub" id="resetSub"></div></div>
+        <button type="button" class="modal-x" id="resetX" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="resetBody"></div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="resetCancel" data-i18n>Cancel</button>
+        <button type="button" class="btn btn-primary" id="resetOk" data-i18n>Reset</button>
+      </div>
+    </div>
+  </div>
+
   <!-- courses register themselves into window.COURSES -->
-  <script src="carino-clock.js" defer></script>
+  <script src="carino-navbar.js" data-app="Learn" data-repo="Learn" defer></script>
   <script src="carino-lang.js" defer></script>
   <script src="i18n.js" defer></script>
+  <script src="carino-ui.js" defer></script>
   <script src="js/courses/assembly.js"></script>
   <script src="js/courses/pcarch.js"></script>
   <script src="js/courses/bash.js"></script>

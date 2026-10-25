@@ -2,8 +2,9 @@
    Carino Learn — platform logic
    A multi-course learning site. Courses register themselves into
    window.COURSES (see js/courses/*.js). This file builds the slice-menu
-   chooser, renders the selected course, tracks per-course progress, and
-   drives the navbar clock + diagnostics. No frameworks.
+   chooser, renders the selected course and tracks per-course progress
+   (ticked by the learner, kept in this browser, exportable as JSON).
+   The navbar is the shared carino-navbar.js. No frameworks.
    ===================================================================== */
 
 (() => {
@@ -44,21 +45,51 @@
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.cpu}</svg>`;
 
   /* ---------- progress (per course) ---------- */
-  /* keys use the fleet 'learn.' prefix; legacy 'carino-learn-*' keys migrate */
+  /* keys use the fleet 'learn.' prefix; legacy 'carino-learn-*' keys migrate.
+     Every access is guarded: private windows and blocked storage throw, and
+     the page must keep working (ticks then last only until reload). */
   const keyFor = (id) => `learn.${id}`;
+  const memory = {};                       // fallback when storage is unavailable
+  let storeOK = true;
+  function storeFailed() {
+    if (!storeOK) return;
+    storeOK = false;
+    showAlert("warn", tt("Progress can't be saved in this browser. Your ticks last until you close the page."), true);
+  }
   const doneFor = (id) => {
+    if (memory[id]) return new Set(memory[id]);
     try {
       let raw = localStorage.getItem(keyFor(id));
       if (raw == null) {
         const legacy = localStorage.getItem(`carino-learn-${id}`);
         if (legacy != null) { localStorage.setItem(keyFor(id), legacy); raw = legacy; }
       }
-      return new Set(JSON.parse(raw) || []);
+      const arr = JSON.parse(raw);
+      return new Set(Array.isArray(arr) ? arr : []);
     }
     catch { return new Set(); }
   };
-  const saveDone = (id, set) =>
-    localStorage.setItem(keyFor(id), JSON.stringify([...set]));
+  const saveDone = (id, set) => {
+    memory[id] = [...set];
+    try { localStorage.setItem(keyFor(id), JSON.stringify([...set])); delete memory[id]; }
+    catch { storeFailed(); }
+  };
+
+  /* ---------- page alerts (Branding .alert) ---------- */
+  function showAlert(kind, text, sticky) {
+    const host = $("#pageAlerts");
+    if (!host) return;
+    const el = document.createElement("div");
+    el.className = "alert " + kind;
+    el.setAttribute("role", kind === "err" || kind === "warn" ? "alert" : "status");
+    el.textContent = text;
+    host.appendChild(el);
+    if (!sticky) setTimeout(() => el.remove(), 6000);
+  }
+  const labFailed = (mount, err, what) => {
+    console.warn(what, err);
+    mount.innerHTML = `<div class="alert err">${esc(tt("This lab couldn't start. The reading still works."))}</div>`;
+  };
 
   /* =================================================================== */
   /* Syntax highlighting (lang-aware, HTML-safe)                         */
@@ -386,29 +417,27 @@
     const host = $("#courseHost");
     const viz = (window.COURSE_VIZ || {})[course.id];
     const labHtml = viz ? `
-      <section class="lab" id="lab">
-        <div class="lab-inner">
-          <div class="lab-head">
-            <span class="track-kicker">${tt("Interactive lab")}</span>
-            <h2>${esc(viz.title)}</h2>
-            <p class="lab-blurb">${md(viz.blurb || "")}</p>
-          </div>
+      <div class="lab-wrap">
+        <section class="lab" id="lab">
+          <div class="lab-kicker">${tt("Interactive lab")}</div>
+          <h2>${esc(viz.title)}</h2>
+          <p class="lab-blurb">${md(viz.blurb || "")}</p>
           <div class="lab-mount" id="labMount"></div>
-        </div>
-      </section>` : "";
+        </section>
+      </div>` : "";
     host.innerHTML = `
-      <section class="hero">
+      <section class="mod-hero">
         <div class="hero-inner">
           <span class="kicker">${esc(course.tag)}</span>
-          <h1>${esc(course.title)} <em>${tt("course")}</em></h1>
+          <h1>${esc(course.title)}</h1>
           <p class="lede">${md(course.intro)}</p>
           <div class="hero-cta">
-            <a class="btn btn-accent" href="#${course.id}/stage-0">${tt("Start at stage 0 →")}</a>
-            <a class="btn btn-ghost" href="#${course.id}/reference">${tt("Cheat-sheet")}</a>
-            <button class="btn btn-ghost" id="resetBtn" type="button">${tt("Reset progress")}</button>
+            <a class="btn btn-primary" href="#${course.id}/stage-0">${tt("Start at stage 0")}</a>
+            <a class="btn" href="#${course.id}/reference">${tt("Cheat-sheet")}</a>
+            <button class="btn btn-ghost" id="allDoneBtn" type="button"></button>
           </div>
           <div class="prog-bar-wrap">
-            <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+            <span class="progress fluid"><span id="progFill" style="width:0%"></span></span>
             <span class="prog-label" id="progText">0 / 0</span>
           </div>
         </div>
@@ -445,20 +474,26 @@
         const sec = document.createElement("section");
         sec.className = "lab lab-inline";
         sec.innerHTML = `
-          <div class="lab-head">
-            <span class="track-kicker">${tt("Interactive lab")}</span>
-            <h2>${esc(L.title)}</h2>
-            <p class="lab-blurb">${md(L.blurb || "")}</p>
-          </div>
+          <div class="lab-kicker">${tt("Interactive lab")}</div>
+          <h3>${esc(L.title)}</h3>
+          <p class="lab-blurb">${md(L.blurb || "")}</p>
           <div class="lab-mount"></div>`;
         roadmap.appendChild(sec);
-        try { L.mount($(".lab-mount", sec)); livenLab(sec); }
-        catch (err) { console.warn("mini-lab mount failed for " + course.id, err); }
+        const mount = $(".lab-mount", sec);
+        try { L.mount(mount); livenLab(sec); }
+        catch (err) { labFailed(mount, err, "mini-lab mount failed for " + course.id); }
       });
     });
 
-    // jump nav
+    // jump nav: the lab first, then every stage
     const jn = $("#jumpNav", host);
+    if (viz) {
+      const a = document.createElement("a");
+      a.href = `#${course.id}/lab`;
+      a.className = "jump-item jump-lab";
+      a.innerHTML = `<span class="jn-num">▶</span><span class="jn-t">${tt("Interactive lab")}</span>`;
+      jn.appendChild(a);
+    }
     course.stages.forEach((s) => {
       const a = document.createElement("a");
       a.href = `#${course.id}/stage-${s.n}`;
@@ -472,19 +507,24 @@
     const rg = $("#refGrid", host);
     (course.reference || []).forEach((c) => rg.appendChild(referenceCard(c)));
 
-    // wire reset + scrollspy
-    $("#resetBtn", host).addEventListener("click", () => {
-      if (!confirm(`${course.title} — ${tt("Reset your progress on this course?")}`)) return;
-      done.clear(); saveDone(active, done);
-      $$(".done-toggle input", host).forEach((cb) => (cb.checked = false));
-      $$(".stage", host).forEach((c) => c.classList.remove("is-done"));
+    // "mark every stage done" / "clear every tick" for this module
+    $("#allDoneBtn", host).addEventListener("click", () => {
+      const all = done.size === course.stages.length;
+      done = all ? new Set() : new Set(course.stages.map((s) => s.n));
+      saveDone(active, done);
+      $$(".stage", host).forEach((c) => {
+        const on = done.has(+c.dataset.n);
+        c.classList.toggle("is-done", on);
+        const cb = $(".done-toggle input", c); if (cb) cb.checked = on;
+      });
       refreshProgress();
     });
 
     // mount the interactive visual
     if (viz) {
-      try { viz.mount($("#labMount", host)); livenLab($("#labMount", host)); }
-      catch (err) { console.warn("viz mount failed for " + course.id, err); }
+      const mount = $("#labMount", host);
+      try { viz.mount(mount); livenLab(mount); }
+      catch (err) { labFailed(mount, err, "viz mount failed for " + course.id); }
     }
 
     wireScrollSpy(host);
@@ -522,28 +562,27 @@
     const pct = total ? Math.round((n / total) * 100) : 0;
     const all = overallProgress();
 
-    // header ring: current course when one is open, whole platform on the home grid
-    const ringPct = course ? pct : all.pct;
+    // module hero bar + "all done" toggle
     const fill = $("#progFill"); if (fill) fill.style.width = pct + "%";
     const ptext = $("#progText"); if (ptext) ptext.textContent = `${n} / ${total} ${tt("complete")}`;
-    $("#progPct").textContent = ringPct + "%";
-    $("#progRing").style.background =
-      `conic-gradient(var(--accent) ${ringPct * 3.6}deg, var(--border) 0deg)`;
-    $("#diagDone").textContent = course ? `${n} / ${total}` : "—";
-    $("#diagPct").textContent = course ? pct + "%" : "—";
-    const dAll = $("#diagAllDone"); if (dAll) dAll.textContent = `${all.n} / ${all.total}`;
-    const dAllPct = $("#diagAllPct"); if (dAllPct) dAllPct.textContent = all.pct + "%";
+    const allBtn = $("#allDoneBtn");
+    if (allBtn) allBtn.textContent = total && n === total ? tt("Clear every tick") : tt("Mark every stage done");
+
+    // navbar Progress menu: the open module when there is one, else everything
+    $("#progPct").textContent = (course ? pct : all.pct) + "%";
+    $("#rowModule").hidden = !course;
+    if (course) {
+      $("#rowModuleName").textContent = course.title;
+      $("#diagDone").textContent = `${n} / ${total}`;
+    }
+    $("#diagAllDone").textContent = `${all.n} / ${all.total} · ${all.pct}%`;
+
+    // overview pill
     const oProg = $("#overviewProg");
     if (oProg) oProg.textContent = `${all.n} / ${all.total} ${tt("stages")} · ${all.pct}%`;
+    const oFill = $("#overviewFill"); if (oFill) oFill.style.width = all.pct + "%";
 
-    const greet = $("#greeting");
-    if (greet) greet.textContent = !course ?
-      (all.n === 0 ? tt("Pick a module.") : `${tt("Overall:")} ${all.n}/${all.total} ${tt("stages cleared.")}`) :
-      n === 0 ? `${course.title}: ${tt("ready when you are.")}` :
-      n === total ? `${course.title}: ${tt("complete.")} 🏁` :
-      `${course.title}: ${n}/${total} ${tt("cleared.")}`;
-
-    $$(".jump-item").forEach((a) => a.classList.toggle("done", done.has(+a.dataset.n)));
+    $$(".jump-item[data-n]").forEach((a) => a.classList.toggle("done", done.has(+a.dataset.n)));
     refreshSliceTiles();
   }
 
@@ -554,16 +593,11 @@
       const d = c.id === active ? done : doneFor(c.id);
       const total = c.stages.length;
       const pct = total ? Math.round((d.size / total) * 100) : 0;
-      const f = $(".slice-prog-fill", tile); if (f) f.style.width = pct + "%";
-      const cnt = $(".slice-count", tile); if (cnt) cnt.textContent = `${d.size} / ${total}`;
-      const ring = $(".slice-ring", tile);
-      if (ring) {
-        ring.style.background = `conic-gradient(var(--accent) ${pct * 3.6}deg, var(--border) 0deg)`;
-        $("span", ring).textContent = pct + "%";
-      }
-      const cb = $(".slice-done input", tile);
-      if (cb) cb.checked = total > 0 && d.size === total;
-      tile.classList.toggle("is-complete", total > 0 && d.size === total);
+      const f = $(".progress > span", tile); if (f) f.style.width = pct + "%";
+      const complete = total > 0 && d.size === total;
+      const cnt = $(".s-count", tile);
+      if (cnt) cnt.textContent = complete ? `✓ ${tt("complete")}` : `${d.size} / ${total}`;
+      tile.classList.toggle("is-complete", complete);
     });
   }
 
@@ -573,42 +607,34 @@
   function buildSlices() {
     const menu = $("#sliceMenu");
     courseList().forEach((c, i) => {
-      const slice = document.createElement("div");
+      const slice = document.createElement("a");
       slice.className = "slice";
       slice.dataset.id = c.id;
-      slice.setAttribute("role", "link");
-      slice.tabIndex = 0;
+      slice.href = "#" + c.id;
       slice.innerHTML = `
-        <div class="slice-bg"></div>
-        <div class="slice-inner">
-          <span class="slice-num">${String(i + 1).padStart(2, "0")}</span>
-          <div class="slice-ring" aria-hidden="true"><span>0%</span></div>
-          <span class="slice-icon">${svg(c.icon)}</span>
-          <h2 class="slice-title">${esc(c.title)}</h2>
-          <p class="slice-blurb">${esc(c.blurb)}</p>
-          <div class="slice-prog"><div class="slice-prog-fill"></div></div>
-          <span class="slice-count">0 / ${c.stages.length}</span>
-          <label class="slice-done" title="${tt("Tick when you have finished every stage of this module")}">
-            <input type="checkbox" aria-label="Mark ${esc(c.title)} module complete">
-            <span data-i18n>module complete</span>
-          </label>
-        </div>`;
-      slice.addEventListener("click", (e) => {
-        if (e.target.closest(".slice-done")) return;   // checkbox, not navigation
-        location.hash = "#" + c.id;
-      });
-      slice.addEventListener("keydown", (e) => {
-        if ((e.key === "Enter" || e.key === " ") && !e.target.closest(".slice-done")) {
-          e.preventDefault(); location.hash = "#" + c.id;
-        }
-      });
-      $(".slice-done input", slice).addEventListener("change", (e) => {
-        const set = e.target.checked ? new Set(c.stages.map((s) => s.n)) : new Set();
-        saveDone(c.id, set);
-        if (c.id === active) { done = doneFor(c.id); renderCourse(c); }
-        refreshProgress();
-      });
+        <span class="s-num">${String(i + 1).padStart(2, "0")}</span>
+        <span class="s-icon" aria-hidden="true">${svg(c.icon)}</span>
+        <span class="s-text">${esc(c.title)}</span>
+        <span class="s-blurb">${esc(c.blurb)}</span>
+        <span class="s-prog"><span class="progress fluid"><span style="width:0%"></span></span><span class="s-count">0 / ${c.stages.length}</span></span>`;
       menu.appendChild(slice);
+    });
+  }
+
+  /* Routing follows CarinoUI.slices (body.state-overview / .state-module,
+     .collapsed, .active + aria-current), with one addition it does not have
+     yet: a stage or lab after a slash, #bash/stage-3 or #bash/lab. */
+  function markSlices(id) {
+    const menu = $("#sliceMenu");
+    document.body.classList.toggle("state-module", !!id);
+    document.body.classList.toggle("state-overview", !id);
+    menu.classList.toggle("collapsed", !!id);
+    $$(".slice", menu).forEach((s) => {
+      const on = s.dataset.id === id;
+      s.classList.toggle("active", on);
+      if (on) s.setAttribute("aria-current", "page"); else s.removeAttribute("aria-current");
+      // keep the active tab visible in the (scrollable) collapsed bar
+      if (on) menu.scrollLeft = s.offsetLeft - (menu.clientWidth - s.offsetWidth) / 2;
     });
   }
 
@@ -616,12 +642,7 @@
     if (!window.COURSES[id]) return showOverview();
     active = id;
     done = doneFor(id);
-    document.body.classList.remove("state-overview");
-    document.body.classList.add("state-selected");
-    $$(".slice").forEach((s) => s.classList.toggle("active", s.dataset.id === id));
-    // keep the active tab visible in the (scrollable) collapsed tab bar
-    const menu = $("#sliceMenu"), act = $(`.slice[data-id="${id}"]`, menu);
-    if (menu && act) menu.scrollLeft = act.offsetLeft - (menu.clientWidth - act.offsetWidth) / 2;
+    markSlices(id);
     renderCourse(window.COURSES[id]);
     // scroll to anchor if any, else top of course
     requestAnimationFrame(() => {
@@ -633,12 +654,9 @@
 
   function showOverview() {
     active = null; done = new Set();
-    document.body.classList.add("state-overview");
-    document.body.classList.remove("state-selected");
-    $$(".slice").forEach((s) => s.classList.remove("active"));
+    markSlices(null);
     $("#courseHost").innerHTML = "";
     refreshProgress();
-    refreshSliceTiles();
     window.scrollTo(0, 0);
   }
 
@@ -651,38 +669,98 @@
     else if (anchor) { const t = $("#" + anchor); if (t) t.scrollIntoView({ block: "start" }); }
   }
 
-  /* ---------- navbar clock + diagnostics ---------- */
-  // Header clock (#clockLocal/#tzName + click-to-cycle) is owned by the shared
-  // module carino-clock.js; here we only keep the diag "Local time" row.
-  function tickClock() {
-    const now = new Date();
-    const p = (x) => String(x).padStart(2, "0");
-    const dc = $("#diagClock"); if (dc) dc.textContent = `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+  /* ---------- reset (Branding modal, never confirm()) ---------- */
+  let lastFocus = null;
+  function openReset() {
+    const course = window.COURSES[active];
+    $("#resetSub").textContent = course ? course.title : tt("Every module");
+    $("#resetBody").textContent = course
+      ? tt("This clears every tick in this module. Other modules keep theirs.")
+      : tt("This clears every tick in every module. Export first if you want a copy.");
+    lastFocus = document.activeElement;
+    $("#resetModal").hidden = false;
+    $("#resetCancel").focus();
   }
-  function wireDiag() {
-    const btn = $("#diagToggle"), box = $("#diagBox");
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const open = box.classList.toggle("open");
-      btn.setAttribute("aria-expanded", String(open));
+  function closeReset() {
+    $("#resetModal").hidden = true;
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function doReset() {
+    const ids = active ? [active] : courseList().map((c) => c.id);
+    ids.forEach((id) => saveDone(id, new Set()));
+    if (active) {
+      done = new Set();
+      $$("#courseHost .done-toggle input").forEach((cb) => (cb.checked = false));
+      $$("#courseHost .stage").forEach((c) => c.classList.remove("is-done"));
+    }
+    closeReset();
+    refreshProgress();
+  }
+  function wireReset() {
+    $("#resetBtn").addEventListener("click", openReset);
+    $("#resetOk").addEventListener("click", doReset);
+    $("#resetCancel").addEventListener("click", closeReset);
+    $("#resetX").addEventListener("click", closeReset);
+    $("#resetModal").addEventListener("click", (e) => { if (e.target.id === "resetModal") closeReset(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#resetModal").hidden) closeReset(); });
+  }
+
+  /* ---------- export / import (the only way to move progress) ---------- */
+  function exportProgress() {
+    const progress = {};
+    courseList().forEach((c) => {
+      const d = c.id === active ? done : doneFor(c.id);
+      if (d.size) progress[c.id] = [...d].sort((x, y) => x - y);
     });
-    document.addEventListener("click", (e) => {
-      if (!box.contains(e.target) && e.target !== btn) {
-        box.classList.remove("open"); btn.setAttribute("aria-expanded", "false");
-      }
+    const data = { site: "learn.carino.systems", version: 1, exported: new Date().toISOString(), progress };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "carino-learn-progress.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  async function importProgress(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); }
+    catch { return showAlert("err", tt("That file is not a progress export.")); }
+    const prog = data && typeof data.progress === "object" && data.progress;
+    if (!prog) return showAlert("err", tt("That file is not a progress export."));
+    let modules = 0;
+    courseList().forEach((c) => {
+      const list = prog[c.id];
+      if (!Array.isArray(list)) return;
+      const valid = new Set(c.stages.map((s) => s.n));
+      saveDone(c.id, new Set(list.map(Number).filter((n) => valid.has(n))));
+      modules++;
+    });
+    if (active) { done = doneFor(active); renderCourse(window.COURSES[active]); }
+    else refreshProgress();
+    showAlert("ok", tt("Progress imported for {n} modules.").replace("{n}", modules));
+  }
+  function wireTransfer() {
+    $("#exportBtn").addEventListener("click", exportProgress);
+    $("#importBtn").addEventListener("click", () => $("#importFile").click());
+    $("#importFile").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (f) importProgress(f);
     });
   }
 
   /* ---------- boot ---------- */
   document.addEventListener("DOMContentLoaded", () => {
+    try { const k = "learn.__probe"; localStorage.setItem(k, "1"); localStorage.removeItem(k); }
+    catch { storeFailed(); }
     if (!window.COURSES || !courseList().length) {
-      $("#sliceMenu").innerHTML = `<p style="margin:auto;color:#888">${tt("No courses loaded.")}</p>`;
+      $("#sliceMenu").hidden = true;
+      showAlert("warn", tt("No modules loaded. Reload the page; if it keeps happening, a script was blocked."), true);
       return;
     }
     buildSlices();
-    wireDiag();
-    const dCourses = $("#diagCourses");
-    if (dCourses) dCourses.textContent = String(courseList().length);
+    wireReset();
+    wireTransfer();
+    $("#diagCourses").textContent = String(courseList().length);
     window.addEventListener("hashchange", route);
     // fleet language switch: re-render the open course so its JS-built
     // chrome picks up the new dictionary (static chrome is handled by i18n.js)
@@ -690,7 +768,6 @@
       if (active && window.COURSES[active]) renderCourse(window.COURSES[active]);
       else refreshProgress();
     });
-    tickClock(); setInterval(tickClock, 1000);
     route();
   });
 })();

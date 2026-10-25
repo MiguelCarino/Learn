@@ -2,7 +2,7 @@
 // English strings ARE the keys, so a missing entry falls back to English.
 // Course CONTENT (module titles, stages, labs, reference tables) is data and
 // deliberately stays English; this file covers the platform chrome: navbar,
-// diagnostics, overview head, stage-card furniture, buttons and hints.
+// Progress menu, landing hero, stage-card furniture, buttons and hints.
 // Locale comes from the fleet resolver (carino-lang.js): ?lang > cookie >
 // browser > en. This script is deferred and placed after carino-lang.js, so
 // window.CarinoLang exists when it runs. Japanese deliberately says "PC".
@@ -68,6 +68,33 @@ const I18N = {
         'module complete': 'módulo completado',
         'Tick when you have finished every stage of this module': 'Marca cuando hayas terminado todas las etapas de este módulo',
         'No courses loaded.': 'No hay cursos cargados.',
+        // Homologation: navbar Progress menu, landing hero, footer, reset modal
+        'This module': 'Este módulo',
+        'Saved': 'Guardado',
+        'in this browser': 'en este navegador',
+        'Export progress': 'Exportar progreso',
+        'Import progress': 'Importar progreso',
+        'Learn the machine,': 'Aprende la máquina,',
+        'from the silicon up.': 'desde el silicio hacia arriba.',
+        'has hands-on modules for beginners. Each one opens with a lab you can try and a list of stages you tick off.': 'tiene módulos prácticos para principiantes. Cada uno empieza con un laboratorio para probar y una lista de etapas que vas marcando.',
+        'Progress is saved in this browser only. No account, nothing sent anywhere.': 'El progreso se guarda solo en este navegador. Sin cuenta, no se envía nada a ningún sitio.',
+        'Source': 'Código fuente',
+        'Legal & privacy': 'Aviso legal y privacidad',
+        'All Carino sites': 'Todos los sitios de Carino',
+        'Carino Learn · AGPL-3.0 · part of carino.systems': 'Carino Learn · AGPL-3.0 · parte de carino.systems',
+        'Cancel': 'Cancelar',
+        'Reset': 'Reiniciar',
+        'Progress can\'t be saved in this browser. Your ticks last until you close the page.': 'El progreso no se puede guardar en este navegador. Tus marcas duran hasta que cierres la página.',
+        'This lab couldn\'t start. The reading still works.': 'Este laboratorio no pudo iniciarse. El texto sigue disponible.',
+        'Start at stage 0': 'Empieza en la etapa 0',
+        'Clear every tick': 'Quitar todas las marcas',
+        'Mark every stage done': 'Marcar todas las etapas',
+        'Every module': 'Todos los módulos',
+        'This clears every tick in this module. Other modules keep theirs.': 'Esto borra todas las marcas de este módulo. Los demás módulos conservan las suyas.',
+        'This clears every tick in every module. Export first if you want a copy.': 'Esto borra todas las marcas de todos los módulos. Exporta antes si quieres una copia.',
+        'That file is not a progress export.': 'Ese archivo no es una exportación de progreso.',
+        'Progress imported for {n} modules.': 'Progreso importado para {n} módulos.',
+        'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'No se cargó ningún módulo. Recarga la página; si sigue pasando, se bloqueó un script.',
     },
     'pt-BR': {
         'Late shift.': 'Turno da noite.',
@@ -123,6 +150,33 @@ const I18N = {
         'module complete': 'módulo concluído',
         'Tick when you have finished every stage of this module': 'Marque quando terminar todas as etapas deste módulo',
         'No courses loaded.': 'Nenhum curso carregado.',
+        // Homologation: navbar Progress menu, landing hero, footer, reset modal
+        'This module': 'Este módulo',
+        'Saved': 'Salvo',
+        'in this browser': 'neste navegador',
+        'Export progress': 'Exportar progresso',
+        'Import progress': 'Importar progresso',
+        'Learn the machine,': 'Aprenda a máquina,',
+        'from the silicon up.': 'do silício para cima.',
+        'has hands-on modules for beginners. Each one opens with a lab you can try and a list of stages you tick off.': 'tem módulos práticos para iniciantes. Cada um começa com um laboratório para experimentar e uma lista de etapas para ir marcando.',
+        'Progress is saved in this browser only. No account, nothing sent anywhere.': 'O progresso fica salvo só neste navegador. Sem conta, nada é enviado para lugar nenhum.',
+        'Source': 'Código-fonte',
+        'Legal & privacy': 'Aviso legal e privacidade',
+        'All Carino sites': 'Todos os sites Carino',
+        'Carino Learn · AGPL-3.0 · part of carino.systems': 'Carino Learn · AGPL-3.0 · parte de carino.systems',
+        'Cancel': 'Cancelar',
+        'Reset': 'Zerar',
+        'Progress can\'t be saved in this browser. Your ticks last until you close the page.': 'Não é possível salvar o progresso neste navegador. Suas marcações duram até você fechar a página.',
+        'This lab couldn\'t start. The reading still works.': 'Este laboratório não pôde iniciar. O texto continua disponível.',
+        'Start at stage 0': 'Comece na etapa 0',
+        'Clear every tick': 'Desmarcar tudo',
+        'Mark every stage done': 'Marcar todas as etapas',
+        'Every module': 'Todos os módulos',
+        'This clears every tick in this module. Other modules keep theirs.': 'Isto apaga todas as marcações deste módulo. Os outros módulos mantêm as suas.',
+        'This clears every tick in every module. Export first if you want a copy.': 'Isto apaga todas as marcações de todos os módulos. Exporte antes se quiser uma cópia.',
+        'That file is not a progress export.': 'Esse arquivo não é uma exportação de progresso.',
+        'Progress imported for {n} modules.': 'Progresso importado para {n} módulos.',
+        'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'Nenhum módulo carregado. Recarregue a página; se continuar, um script foi bloqueado.',
     },
     ja: {
         'Late shift.': '夜勤お疲れさま。',
@@ -178,6 +232,33 @@ const I18N = {
         'module complete': 'モジュール完了',
         'Tick when you have finished every stage of this module': 'このモジュールの全ステージを終えたらチェック',
         'No courses loaded.': 'コースが読み込まれていません。',
+        // Homologation: navbar Progress menu, landing hero, footer, reset modal
+        'This module': 'このモジュール',
+        'Saved': '保存先',
+        'in this browser': 'このブラウザ',
+        'Export progress': '進捗をエクスポート',
+        'Import progress': '進捗をインポート',
+        'Learn the machine,': 'マシンを学ぼう、',
+        'from the silicon up.': 'シリコンから積み上げて。',
+        'has hands-on modules for beginners. Each one opens with a lab you can try and a list of stages you tick off.': 'は初心者向けの実践モジュール集です。各モジュールは試せるラボから始まり、終えたステージにチェックを付けていきます。',
+        'Progress is saved in this browser only. No account, nothing sent anywhere.': '進捗はこのブラウザにのみ保存されます。アカウント不要、どこにも送信されません。',
+        'Source': 'ソースコード',
+        'Legal & privacy': '法的情報とプライバシー',
+        'All Carino sites': 'Carino の全サイト',
+        'Carino Learn · AGPL-3.0 · part of carino.systems': 'Carino Learn · AGPL-3.0 · carino.systems の一部',
+        'Cancel': 'キャンセル',
+        'Reset': 'リセット',
+        'Progress can\'t be saved in this browser. Your ticks last until you close the page.': 'このブラウザでは進捗を保存できません。チェックはページを閉じるまで有効です。',
+        'This lab couldn\'t start. The reading still works.': 'このラボを開始できませんでした。解説はそのまま読めます。',
+        'Start at stage 0': 'ステージ0から始める',
+        'Clear every tick': 'すべてのチェックを外す',
+        'Mark every stage done': '全ステージを完了にする',
+        'Every module': '全モジュール',
+        'This clears every tick in this module. Other modules keep theirs.': 'このモジュールのチェックをすべて消去します。他のモジュールはそのままです。',
+        'This clears every tick in every module. Export first if you want a copy.': '全モジュールのチェックを消去します。控えが必要なら先にエクスポートしてください。',
+        'That file is not a progress export.': 'このファイルは進捗のエクスポートではありません。',
+        'Progress imported for {n} modules.': '{n} モジュールの進捗をインポートしました。',
+        'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'モジュールを読み込めませんでした。再読み込みしてください。続く場合はスクリプトがブロックされています。',
     },
     ru: {
         'Late shift.': 'Ночная смена.',
@@ -233,17 +314,34 @@ const I18N = {
         'module complete': 'модуль пройден',
         'Tick when you have finished every stage of this module': 'Отметьте, когда завершите все этапы модуля',
         'No courses loaded.': 'Курсы не загружены.',
+        // Homologation: navbar Progress menu, landing hero, footer, reset modal
+        'This module': 'Этот модуль',
+        'Saved': 'Хранится',
+        'in this browser': 'в этом браузере',
+        'Export progress': 'Экспорт прогресса',
+        'Import progress': 'Импорт прогресса',
+        'Learn the machine,': 'Изучите машину —',
+        'from the silicon up.': 'от кремния и выше.',
+        'has hands-on modules for beginners. Each one opens with a lab you can try and a list of stages you tick off.': '— практические модули для начинающих. Каждый открывается лабораторией, которую можно попробовать, и списком этапов, которые вы отмечаете.',
+        'Progress is saved in this browser only. No account, nothing sent anywhere.': 'Прогресс хранится только в этом браузере. Без учётной записи, ничего никуда не отправляется.',
+        'Source': 'Исходный код',
+        'Legal & privacy': 'Правовая информация и конфиденциальность',
+        'All Carino sites': 'Все сайты Carino',
+        'Carino Learn · AGPL-3.0 · part of carino.systems': 'Carino Learn · AGPL-3.0 · часть carino.systems',
+        'Cancel': 'Отмена',
+        'Reset': 'Сбросить',
+        'Progress can\'t be saved in this browser. Your ticks last until you close the page.': 'В этом браузере нельзя сохранить прогресс. Отметки сохранятся, пока вы не закроете страницу.',
+        'This lab couldn\'t start. The reading still works.': 'Эта лаборатория не запустилась. Текст по-прежнему доступен.',
+        'Start at stage 0': 'Начать с этапа 0',
+        'Clear every tick': 'Снять все отметки',
+        'Mark every stage done': 'Отметить все этапы',
+        'Every module': 'Все модули',
+        'This clears every tick in this module. Other modules keep theirs.': 'Это удалит все отметки в этом модуле. Другие модули сохранят свои.',
+        'This clears every tick in every module. Export first if you want a copy.': 'Это удалит все отметки во всех модулях. Сначала сделайте экспорт, если нужна копия.',
+        'That file is not a progress export.': 'Этот файл не является экспортом прогресса.',
+        'Progress imported for {n} modules.': 'Прогресс импортирован для модулей: {n}.',
+        'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'Модули не загрузились. Обновите страницу; если повторяется, какой-то скрипт заблокирован.',
     },
-};
-
-// Hero headline keeps its <em> emphasis, so it is applied as trusted,
-// hand-written markup rather than through data-i18n / textContent.
-const HERO_HTML = {
-    en: 'Learn the machine, from the <em>silicon up</em>.',
-    es: 'Aprende la máquina, desde el <em>silicio hacia arriba</em>.',
-    'pt-BR': 'Aprenda a máquina, do <em>silício para cima</em>.',
-    ja: '<em>シリコンから</em>積み上げて、マシンを学ぼう。',
-    ru: 'Изучите машину — <em>от кремния и выше</em>.',
 };
 
 let LOCALE = 'en';
@@ -271,20 +369,6 @@ function applyStaticI18n() {
     });
 }
 
-// Prominent title attributes + the hero headline (explicit assignments).
-function applyI18nExtras() {
-    const set = (sel, attr, key) => {
-        const el = document.querySelector(sel);
-        if (el) el.setAttribute(attr, t(key));
-    };
-    set('.brand-name', 'title', 'Carino Systems — back to hub');
-    set('.app-tag', 'title', 'Learn — reload');
-    set('.prog-mini', 'title', 'Course progress');
-    set('#diagToggle', 'title', 'Progress');
-    const hero = document.querySelector('.overview-title');
-    if (hero) hero.innerHTML = HERO_HTML[LOCALE] || HERO_HTML.en;
-}
-
 // carino-lang.js is deferred and sits before this (also deferred) script, so
 // the fleet resolver has already run: pick the locale up synchronously, then
 // paint on DOMContentLoaded and repaint on every fleet language switch.
@@ -292,11 +376,9 @@ setLocale(currentFleetLang());
 
 document.addEventListener('DOMContentLoaded', () => {
     applyStaticI18n();
-    applyI18nExtras();
 });
 
 window.addEventListener('carino:langchange', () => {
     setLocale(currentFleetLang());
     applyStaticI18n();
-    applyI18nExtras();
 });
