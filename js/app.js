@@ -616,33 +616,19 @@
         <span class="s-icon" aria-hidden="true">${svg(c.icon)}</span>
         <span class="s-text">${esc(c.title)}</span>
         <span class="s-blurb">${esc(c.blurb)}</span>
-        <span class="s-prog"><span class="progress fluid"><span style="width:0%"></span></span><span class="s-count">0 / ${c.stages.length}</span></span>`;
+        <span class="s-count">0 / ${c.stages.length}</span>
+        <span class="progress fluid s-prog"><span style="width:0%"></span></span>`;
       menu.appendChild(slice);
     });
   }
 
-  /* Routing follows CarinoUI.slices (body.state-overview / .state-module,
-     .collapsed, .active + aria-current), with one addition it does not have
-     yet: a stage or lab after a slash, #bash/stage-3 or #bash/lab. */
-  function markSlices(id) {
-    const menu = $("#sliceMenu");
-    document.body.classList.toggle("state-module", !!id);
-    document.body.classList.toggle("state-overview", !id);
-    menu.classList.toggle("collapsed", !!id);
-    $$(".slice", menu).forEach((s) => {
-      const on = s.dataset.id === id;
-      s.classList.toggle("active", on);
-      if (on) s.setAttribute("aria-current", "page"); else s.removeAttribute("aria-current");
-      // keep the active tab visible in the (scrollable) collapsed bar
-      if (on) menu.scrollLeft = s.offsetLeft - (menu.clientWidth - s.offsetWidth) / 2;
-    });
-  }
-
+  /* Routing is CarinoUI.slices (body.state-overview / .state-module, .collapsed,
+     .active + aria-current). A stage or the lab is a place inside the module,
+     #bash/stage-3 or #bash/lab, and arrives as params.path. */
   function selectCourse(id, anchor) {
     if (!window.COURSES[id]) return showOverview();
     active = id;
     done = doneFor(id);
-    markSlices(id);
     renderCourse(window.COURSES[id]);
     // scroll to anchor if any, else top of course
     requestAnimationFrame(() => {
@@ -654,17 +640,14 @@
 
   function showOverview() {
     active = null; done = new Set();
-    markSlices(null);
     $("#courseHost").innerHTML = "";
     refreshProgress();
     window.scrollTo(0, 0);
   }
 
-  function route() {
-    const raw = location.hash.replace(/^#/, "");          // e.g. "bash/stage-3"
-    if (!raw) return showOverview();
-    const [id, anchor] = raw.split("/");
-    if (!window.COURSES[id]) return showOverview();
+  function route(id, params) {
+    const anchor = params.path;                            // "stage-3" in #bash/stage-3
+    if (!id || !window.COURSES[id]) return showOverview();
     if (id !== active) selectCourse(id, anchor);
     else if (anchor) { const t = $("#" + anchor); if (t) t.scrollIntoView({ block: "start" }); }
   }
@@ -761,13 +744,12 @@
     wireReset();
     wireTransfer();
     $("#diagCourses").textContent = String(courseList().length);
-    window.addEventListener("hashchange", route);
     // fleet language switch: re-render the open course so its JS-built
     // chrome picks up the new dictionary (static chrome is handled by i18n.js)
     window.addEventListener("carino:langchange", () => {
       if (active && window.COURSES[active]) renderCourse(window.COURSES[active]);
       else refreshProgress();
     });
-    route();
+    CarinoUI.slices({ menu: $("#sliceMenu"), onRoute: route });
   });
 })();

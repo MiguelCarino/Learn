@@ -66,7 +66,7 @@ body::before {
 
 .prog-bar-wrap { display: flex; align-items: center; gap: 12px; max-width: 560px; }
 .prog-bar-wrap .progress { flex: 1; }
-.prog-bar-wrap .progress > span, .s-prog .progress > span { transition: width .4s ease; }
+.prog-bar-wrap .progress > span, .s-prog > span { transition: width .4s ease; }
 .prog-label { font-family: var(--mono); font-size: var(--fs-label); color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; white-space: nowrap; }
 
 /* ===================================================================== */
@@ -254,25 +254,15 @@ pre.panel-body { font-family: var(--mono); font-size: var(--fs-sm); white-space:
 .overview-progress .privacy-line { text-align: center; padding-left: 0; text-indent: 0; }
 body.state-module .overview-head { display: none; }
 
-/* ---------- module grid: Branding's slice menu, wrapped into tiles ----------
-   Collapsed (a module open) it is carino-ui.css's sticky 44px bar as is. */
+/* ---------- module grid: Branding's .slice-menu.grid ----------
+   Only the page width, the icons and the bar's background are Learn's own. */
 .slice-menu { width: min(1440px, calc(100% - 32px)); margin: 0 auto 28px; }
 body.state-module .slice-menu { width: 100%; margin: 0; background: var(--bg-header); }
-body.state-overview .slice-menu { flex-wrap: wrap; }
-body.state-overview .slice-menu .slice {
-  flex: 1 1 300px; min-width: 260px; justify-content: flex-start; align-items: flex-start;
-  gap: 8px; padding: 22px 20px; border-bottom: 1px solid var(--border);
-}
-body.state-overview .slice-menu .slice:hover, body.state-overview .slice-menu .slice:focus-visible { flex: 1.12 1 300px; }
+body.state-overview .slice-menu .slice { align-items: flex-start; }
 .slice .s-icon svg { width: 34px; height: 34px; color: var(--accent); transition: transform .3s ease; display: block; }
 body.state-overview .slice:hover .s-icon svg { transform: translateY(-3px) scale(1.06); }
-body.state-overview .slice .s-text { font-size: var(--fs-h3); }
-.s-prog { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: auto; padding-top: 6px; }
-.s-prog .progress { flex: 1; height: 5px; }
-.s-count { font-family: var(--mono); font-size: var(--fs-label); color: var(--text-muted); letter-spacing: .06em; white-space: nowrap; }
-.slice.is-complete .s-count { color: var(--accent); }
-body.state-module .slice-menu .s-icon, body.state-module .slice-menu .s-prog { display: none; }
-@media (min-width: 641px) { body.state-module .slice-menu .slice { flex: 0 0 auto; min-width: 110px; } }
+/* the count and its bar sit at the foot of the tile, level across a row */
+body.state-module .slice-menu .s-icon { display: none; }
 
 /* ---------- show/hide course host ---------- */
 body.state-overview .course-host { display: none; }
@@ -302,13 +292,6 @@ ul.drills li::before { content: "›"; position: absolute; left: 4px; color: var
   padding: 1px 6px; border-radius: 4px; font-size: .85em; color: var(--accent);
 }
 .walk b code, .payoff b code { color: var(--accent); }
-
-/* phones: one tile per row, sized by its content (carino-ui.css stacks the
-   menu; only the tile's own min-width needs lifting) */
-@media (max-width: 640px) {
-  body.state-overview .slice-menu .slice { flex: none; min-width: 0; padding: 18px 16px; }
-  body.state-overview .slice-menu .slice:hover { flex: none; }
-}
 
 /* =====================================================================
    Carino Learn — module grid, interactive labs & ISO document panels
