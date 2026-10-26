@@ -293,7 +293,7 @@
           <div class="stage-meta">
             <span class="stage-time" title="${tt("Suggested time")}">⏱ ${esc(s.time)}</span>
             <label class="done-toggle">
-              <input type="checkbox" ${isDone ? "checked" : ""} aria-label="Mark stage ${s.n} complete">
+              <input type="checkbox" ${isDone ? "checked" : ""} aria-label="${tt("Mark stage {n} complete").replace("{n}", s.n)}">
               <span>${tt("Done")}</span>
             </label>
           </div>
@@ -446,7 +446,7 @@
       ${labHtml}
 
       <div class="layout">
-        <nav class="jump" aria-label="Stages"><div class="jump-title">${esc(course.title)} · ${tt("the path")}</div><div id="jumpNav"></div></nav>
+        <nav class="jump" aria-label="${tt("Stages")}"><div class="jump-title">${esc(course.title)} · ${tt("the path")}</div><div id="jumpNav"></div></nav>
         <div class="roadmap-col">
           <div id="roadmap" class="roadmap"></div>
           <section id="reference" class="reference">

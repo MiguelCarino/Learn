@@ -95,6 +95,10 @@ const I18N = {
         'That file is not a progress export.': 'Ese archivo no es una exportación de progreso.',
         'Progress imported for {n} modules.': 'Progreso importado para {n} módulos.',
         'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'No se cargó ningún módulo. Recarga la página; si sigue pasando, se bloqueó un script.',
+        'More': 'Más',
+        'Close': 'Cerrar',
+        'Stages': 'Etapas',
+        'Mark stage {n} complete': 'Marcar la etapa {n} como completada',
     },
     'pt-BR': {
         'Late shift.': 'Turno da noite.',
@@ -177,6 +181,10 @@ const I18N = {
         'That file is not a progress export.': 'Esse arquivo não é uma exportação de progresso.',
         'Progress imported for {n} modules.': 'Progresso importado para {n} módulos.',
         'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'Nenhum módulo carregado. Recarregue a página; se continuar, um script foi bloqueado.',
+        'More': 'Mais',
+        'Close': 'Fechar',
+        'Stages': 'Etapas',
+        'Mark stage {n} complete': 'Marcar a etapa {n} como concluída',
     },
     ja: {
         'Late shift.': '夜勤お疲れさま。',
@@ -259,6 +267,10 @@ const I18N = {
         'That file is not a progress export.': 'このファイルは進捗のエクスポートではありません。',
         'Progress imported for {n} modules.': '{n} モジュールの進捗をインポートしました。',
         'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'モジュールを読み込めませんでした。再読み込みしてください。続く場合はスクリプトがブロックされています。',
+        'More': 'その他',
+        'Close': '閉じる',
+        'Stages': 'ステージ',
+        'Mark stage {n} complete': 'ステージ {n} を完了にする',
     },
     ru: {
         'Late shift.': 'Ночная смена.',
@@ -341,6 +353,10 @@ const I18N = {
         'That file is not a progress export.': 'Этот файл не является экспортом прогресса.',
         'Progress imported for {n} modules.': 'Прогресс импортирован для модулей: {n}.',
         'No modules loaded. Reload the page; if it keeps happening, a script was blocked.': 'Модули не загрузились. Обновите страницу; если повторяется, какой-то скрипт заблокирован.',
+        'More': 'Ещё',
+        'Close': 'Закрыть',
+        'Stages': 'Этапы',
+        'Mark stage {n} complete': 'Отметить этап {n} как пройденный',
     },
 };
 
@@ -366,6 +382,11 @@ function applyStaticI18n() {
     document.querySelectorAll('[data-i18n]').forEach((el) => {
         if (!el.dataset.i18nKey) el.dataset.i18nKey = el.textContent.trim();
         el.textContent = t(el.dataset.i18nKey);
+    });
+    // data-i18n-aria: the original aria-label is the key.
+    document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+        if (!el.dataset.i18nAria) el.dataset.i18nAria = el.getAttribute('aria-label') || '';
+        el.setAttribute('aria-label', t(el.dataset.i18nAria));
     });
 }
 
