@@ -770,8 +770,7 @@ ul.drills li::before { content: "›"; position: absolute; left: 4px; color: var
 .page-alerts { max-width: 1440px; margin: 0 auto; padding: 0 28px; }
 .page-alerts:empty { display: none; }
 .page-alerts .alert { margin: 12px 0 0; }
-.site-foot { max-width: 1440px; margin: 40px auto 0; padding-left: 28px; padding-right: 28px; }
 @media (max-width: 640px) {
-  .page-alerts, .site-foot { padding-left: 16px; padding-right: 16px; }
+  .page-alerts { padding-left: 16px; padding-right: 16px; }
   .layout { padding: 24px 16px 0; }
 }
