@@ -27,9 +27,69 @@
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Carino Learn", "url": "https://learn.carino.systems/", "description": "Carino Learn: hands-on, checkable learning modules with interactive visualizers — x86-64 assembly, PC architecture, Bash, GNU tools, Linux administration, Git & version control, networking, netplan declarative network configuration, web browsers, regex, cryptography, quantum computing, DICOM & HL7 healthcare interoperability, and ISO 27001 compliance.", "operatingSystem": "Any (runs in a web browser)", "isAccessibleForFree": true, "author": {"@type": "Person", "name": "Miguel Cariño", "url": "https://carino.systems/"}}</script>
   <!-- /carino:head -->
   <link rel="icon" href="logo.webp" type="image/webp">
+  <!-- Theme before first paint, so neither theme flashes the other:
+       ?theme=gold|color (review links; not stored) > carino-theme cookie
+       (shared across *.carino.systems) > localStorage > Gold & Black. -->
+  <meta name="theme-color" content="#050505" id="carinoThemeColor">
+  <script>
+  (function () {
+    var d = document.documentElement, t = null;
+    function pick(v) { return v === 'gold' ? 'gold' : (v === 'color' || v === 'colour') ? 'color' : null; }
+    try { t = pick(new URLSearchParams(location.search).get('theme')); } catch (e) {}
+    if (!t) { try { var m = document.cookie.match(/(?:^|;\s*)carino-theme=([^;]*)/); if (m) t = pick(decodeURIComponent(m[1])); } catch (e) {} }
+    if (!t) { try { t = pick(localStorage.getItem('carino-theme')); } catch (e) {} }
+    t = t || 'gold';
+    d.setAttribute('data-carino-theme', t);
+    var dark = d.getAttribute('data-theme') !== 'light' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+    var meta = document.getElementById('carinoThemeColor');
+    if (meta) meta.content = t === 'gold' ? '#050505' : (dark ? '#0e1420' : '#eef3fc');
+  })();
+  </script>
   <link rel="stylesheet" href="fonts/carino-fonts.css">
   <link rel="stylesheet" href="carino-ui.css">
   <link href="css/styles.css" rel="stylesheet">
+  <!-- Colourful theme + the switch; nothing applies until data-carino-theme="color". -->
+  <link rel="stylesheet" href="carino-theme.css">
+  <style>
+    /* the hero mark in both colourings; the theme picks one */
+    .mark.mk-color, :root[data-carino-theme="color"] .mark.mk-gold { display: none; }
+    :root[data-carino-theme="color"] .mark.mk-color { display: block; }
+    /* Colourful: carino-theme.css remaps the tokens, so everything that reads
+       one follows; these are css/styles.css's values written for black. */
+    :root[data-carino-theme="color"] {
+      --bg-header: var(--bg-card); --bg-code: var(--ct-term-bg); --border-soft: var(--border); --live: var(--err);
+      --t-ins: var(--ct-amber); --t-reg: var(--ct-blue); --t-num: var(--ct-purple);
+      --t-str: var(--ct-green); --t-com: var(--text-muted); --t-dir: var(--ct-red); --t-lbl: var(--warn);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root[data-carino-theme="color"]:not([data-theme="light"]) { --bg-code: var(--bg-elev); }
+    }
+    :root[data-carino-theme="color"] body::before { background: var(--stage-grad); }
+    :root[data-carino-theme="color"] pre.code code, :root[data-carino-theme="color"] .asm-line code, :root[data-carino-theme="color"] .gnu-cmdline code { color: var(--text); }
+    :root[data-carino-theme="color"] .bash-label { fill: var(--text); }
+    :root[data-carino-theme="color"] .panel.nt { background: var(--accent-faint); }
+    :root[data-carino-theme="color"] .panel.nt .panel-body { color: var(--text-sec); }
+    :root[data-carino-theme="color"] .stage:hover .stage-body { border-color: var(--accent-dim); }
+    :root[data-carino-theme="color"] .jump-item.done .jn-num, :root[data-carino-theme="color"] .is-done .stage-num, :root[data-carino-theme="color"] .viz-btn.primary, :root[data-carino-theme="color"] .lnx-bit.on,
+    :root[data-carino-theme="color"] .br-phase.cur, :root[data-carino-theme="color"] .br-r-btn, :root[data-carino-theme="color"] .tpl-count, :root[data-carino-theme="color"] .tier-mandatory { color: var(--ct-on-accent); }
+    :root[data-carino-theme="color"] .is-done .stage-num, :root[data-carino-theme="color"] .lnx-bit.on { box-shadow: var(--ct-shadow-1); }
+    :root[data-carino-theme="color"] .bash-fd.fd2, :root[data-carino-theme="color"] .port.p2, :root[data-carino-theme="color"] .dot.d2 { fill: var(--err); }
+    :root[data-carino-theme="color"] .wire.w2 { stroke: var(--err); }
+    :root[data-carino-theme="color"] .ln-err, :root[data-carino-theme="color"] .sd-red, :root[data-carino-theme="color"] .dcm-row.phi .dcm-val, :root[data-carino-theme="color"] .ec-node.fail span { color: var(--err); }
+    :root[data-carino-theme="color"] .viz-btn.bad, :root[data-carino-theme="color"] .pacs-line.err pre { border-color: var(--ct-err-line); color: var(--ct-err-fg); background: var(--ct-err-bg); }
+    :root[data-carino-theme="color"] .net-layer-f code { background: var(--ct-inline-code); }
+    :root[data-carino-theme="color"] .net-layer.hot { box-shadow: 0 0 0 1px currentColor, var(--ct-shadow-2); }
+    :root[data-carino-theme="color"] .l-eth  { border-color: var(--ct-amber); }  :root[data-carino-theme="color"] .l-eth  > .net-layer-h { color: var(--ct-amber); }
+    :root[data-carino-theme="color"] .l-ip   { border-color: var(--ct-blue); }   :root[data-carino-theme="color"] .l-ip   > .net-layer-h { color: var(--ct-blue); }
+    :root[data-carino-theme="color"] .l-tcp  { border-color: var(--ct-teal); }   :root[data-carino-theme="color"] .l-tcp  > .net-layer-h { color: var(--ct-teal); }
+    :root[data-carino-theme="color"] .l-http { border-color: var(--ct-green); }  :root[data-carino-theme="color"] .l-http > .net-layer-h { color: var(--ct-green); }
+    :root[data-carino-theme="color"] .rx-text mark.rx-m0 { background: var(--accent-glow); color: var(--text); outline-color: var(--accent-dim); }
+    :root[data-carino-theme="color"] .rx-text mark.rx-m1 { background: color-mix(in srgb, var(--ct-teal) 18%, transparent); color: var(--text); outline-color: var(--ct-teal); }
+    :root[data-carino-theme="color"] .iso-phase-k.plan { color: var(--ct-amber); } :root[data-carino-theme="color"] .iso-phase-k.do { color: var(--ct-blue); }
+    :root[data-carino-theme="color"] .iso-phase-k.check { color: var(--ct-green); } :root[data-carino-theme="color"] .iso-phase-k.act { color: var(--ct-red); }
+    :root[data-carino-theme="color"] .tier-recommended { color: var(--ct-on-tonal); background: var(--ct-tonal); border-color: transparent; }
+    :root[data-carino-theme="color"] .sub-bit.host { background: var(--ct-hover); }
+  </style>
 </head>
 <body class="state-overview">
 
@@ -58,7 +118,8 @@
   <header class="landing-hero overview-head">
     <div class="lh-wrap">
       <div class="lh-mark" aria-hidden="true">
-        <img class="mark" src="logo.svg" alt="" width="100" height="100">
+        <img class="mark mk-gold" src="logo.svg" alt="" width="100" height="100">
+        <img class="mark mk-color" src="logo-color.svg" alt="" width="100" height="100">
       </div>
       <h1><span data-i18n>Learn the machine,</span><br><span class="gold" data-i18n>from the silicon up.</span></h1>
       <p class="lh-lede"><strong>Carino Learn</strong> <span data-i18n>has hands-on modules for beginners. Each one opens with a lab you can try and a list of stages you tick off.</span></p>
@@ -104,6 +165,7 @@
 
   <!-- courses register themselves into window.COURSES -->
   <script src="carino-navbar.js" data-app="Learn" data-repo="Learn" defer></script>
+  <script src="carino-theme.js" data-mark="logo.svg" data-mark-color="logo-color.svg" defer></script>
   <script src="carino-lang.js" defer></script>
   <script src="i18n.js" defer></script>
   <script src="carino-ui.js" defer></script>
