@@ -493,7 +493,7 @@ vainfo | head     # VAAPI decode/encode profiles the iGPU offers`,
         "**…the PCIe copy tax**: data must cross the x16 link (~32 GB/s on gen4) to be computed on, an order of magnitude slower than VRAM. Good GPU code moves data once and keeps it there; the arithmetic from stage 3 tells you why.",
         "**iGPU vs dGPU**: the iGPU lives on the CPU die, shares your system RAM, sips single-digit watts, and is entirely sufficient for desktops, video playback and — via its **media engine** — even serious transcoding. The dGPU costs slot, power and money and earns them only when you actually have parallel work: games, ML, heavy render.",
         "**Compute APIs, namecheck level**: **CUDA** (NVIDIA-only, the ML incumbent), **ROCm/HIP** (AMD's answer), **OpenCL** (portable, aging), **Vulkan compute** (portable, modern), oneAPI (Intel). Practical consequence: if a workload says CUDA, your GPU shopping list says NVIDIA.",
-        "**Video engines are separate silicon**: NVENC (NVIDIA), Quick Sync (Intel), exposed on Linux via VAAPI — fixed-function encoders that transcode video at a fraction of the power of shader cores. The ffmpeg command builder on media.carino.systems has a VAAPI toggle; this is the hardware it flips on.",
+        "**Video engines are separate silicon**: NVENC (NVIDIA), Quick Sync (Intel), exposed on Linux via VAAPI — fixed-function encoders that transcode video at a fraction of the power of shader cores. The ffmpeg command builder on files.carino.systems (#transcode) picks the GPU encoder for you (NVIDIA, Intel or AMD); this is the hardware it switches on.",
       ],
       exercise:
         "1. Inventory your GPUs: lspci | grep -Ei 'vga|3d', then find each one's VRAM\n" +
